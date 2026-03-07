@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welding Defect Detection | Yuna Sim</title>
+<meta name="description" content="Welding Defect Detection using CycleGAN synthetic data and YOLOv5 with two-stage transfer learning. Published at IPIU 2024. First author.">
+<meta property="og:title" content="Welding Defect Detection — Case Study | Yuna Sim">
+<meta property="og:description" content="CycleGAN synthetic data generation and YOLOv5 two-stage transfer learning for welding defect detection. 87.5% mAP. First author publication.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://finekiwi.github.io/welding.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent: #2D6A6A;
+    --accent-hover: #1F5252;
+    --accent-light: #F0F7F7;
+    --accent-secondary: #4A8E8E;
+
+    --bg-primary: #FDFAF5;
+    --bg-secondary: #F0F0ED;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-light: #A3A3A3;
+    --border: #E8E5E1;
+    --border-light: #EFEFEF;
+
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    --max-width: 1080px;
+    --content-width: 840px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent-hover);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a:hover { color: var(--accent-hover); }
+  img { max-width: 100%; display: block; }
+
+  /* Typography — same 3-tier system */
+  .t-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .t-heading-1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .t-heading-2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+  }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     NAV
+     ========================================================================== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(253, 250, 245, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .nav-back:hover { color: var(--accent); }
+  .nav-back svg { width: 18px; height: 18px; }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  /* ==========================================================================
+     MAIN LAYOUT
+     ========================================================================== */
+  main {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 3.5rem 0;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-label span {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+
+  .content p {
+    font-size: 1rem;
+    color: #3D3D3D;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+  }
+  .content p:last-child { margin-bottom: 0; }
+
+  /* ==========================================================================
+     HERO
+     ========================================================================== */
+  .hero {
+    padding-top: 7rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-top: 1rem;
+    max-width: 640px;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-meta-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .hero-meta-label {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .hero-meta-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .hero-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     STAT GRID
+     ========================================================================== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .stat-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .stat-source {
+    font-size: 0.6rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+  }
+
+  /* ==========================================================================
+     PROCESS STEPS
+     ========================================================================== */
+  .process-steps {
+    margin: 2rem 0;
+  }
+
+  .process-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .process-step:last-child { margin-bottom: 0; }
+
+  .step-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .step-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ==========================================================================
+     HIGHLIGHT BOX
+     ========================================================================== */
+  .highlight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .highlight-box p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ==========================================================================
+     FINDINGS
+     ========================================================================== */
+  .finding-list {
+    margin: 2rem 0;
+  }
+
+  .finding-item {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-light);
+  }
+  .finding-item:last-child { border-bottom: 1px solid var(--border-light); }
+
+  .finding-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .finding-content h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+  }
+
+  .finding-content p {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ==========================================================================
+     BLOCKQUOTE
+     ========================================================================== */
+  .blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .blockquote p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  /* ==========================================================================
+     IMAGE CONTAINER
+     ========================================================================== */
+  .image-container {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .image-container img {
+    width: 100%;
+    display: block;
+  }
+
+  .image-caption {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ==========================================================================
+     TECH STACK
+     ========================================================================== */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .tech-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+  }
+
+  /* ==========================================================================
+     TAKEAWAY LIST
+     ========================================================================== */
+  .takeaway-list {
+    list-style: none;
+    margin: 1.5rem 0;
+  }
+
+  .takeaway-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+  .takeaway-list li:last-child { margin-bottom: 0; }
+
+  .takeaway-list li::before {
+    content: "\2192";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  /* ==========================================================================
+     BUTTONS
+     ========================================================================== */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 106, 106, 0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: calc(0.55rem - 1.5px) 1.2rem;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* ==========================================================================
+     BACK SECTION
+     ========================================================================== */
+  .back-section {
+    padding: 3rem 0 5rem;
+    text-align: center;
+  }
+
+  /* ==========================================================================
+     FOOTER
+     ========================================================================== */
+  footer {
+    padding: 3rem 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    display: block;
+  }
+
+  /* ==========================================================================
+     ANIMATIONS
+     ========================================================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE
+     ========================================================================== */
+  @media (max-width: 768px) {
+    .hero-meta {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    section {
+      padding: 2.5rem 0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    main { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .nav-inner { padding: 0.8rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Portfolio
+    </a>
+    <a href="index.html" class="nav-logo">Yuna Sim</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="t-display reveal">Welding Defect Detection</h1>
+    <p class="hero-subtitle reveal">Detecting welding defects using CycleGAN-generated synthetic data and YOLOv5 with two-stage transfer learning &mdash; overcoming the absence of real defect datasets in manufacturing.</p>
+
+    <div class="hero-meta reveal" style="margin-top: 2.5rem;">
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Timeline</span>
+        <span class="hero-meta-value">2023 &ndash; 2024</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Role</span>
+        <span class="hero-meta-value">First Author<br>Research Design &amp; Experiments</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Advisor</span>
+        <span class="hero-meta-value">Jewon Kang<br>Ewha Womans University</span>
+      </div>
+    </div>
+
+    <div class="hero-actions reveal">
+      <span class="hero-result">Presented at &mdash; IPIU (Image Processing and Image Understanding), Feb 2024</span>
+    </div>
+    <div class="hero-actions reveal" style="margin-top: 1rem;">
+      <a href="welding.pdf" target="_blank" rel="noopener" class="btn-secondary">Read Paper &rarr;</a>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Problem</span>
+    </div>
+    <div class="content">
+      <p>Welding is a critical manufacturing process where defects can degrade product performance or, in severe cases, cause safety hazards. Traditional inspection relies on visual examination and non-destructive testing &mdash; methods that are time-consuming, costly, and highly dependent on the inspector's individual experience and skill.</p>
+      <p>Deep learning offers a path toward automated defect detection, but training such models requires large, high-quality datasets. In welding, this data simply does not exist publicly: real defect images are restricted due to security concerns and the high cost of collecting them in production environments.</p>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>The core insight:</strong> We couldn't collect the data, so we manufactured it. Rather than waiting for access to restricted real-world defect images, we repurposed publicly available X-ray radiographs &mdash; using them as a structural proxy for defect geometry &mdash; and used CycleGAN to translate them into the RGB visual domain of actual welding environments. The research contribution isn't just the detection accuracy; it's the design of a data generation pipeline that sidesteps a fundamental access barrier.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-number">87.5%</div>
+        <div class="stat-label">mAP (IoU&nbsp;0.5) with two-stage transfer learning</div>
+        <div class="stat-source">+9.1%p vs. no transfer learning</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">1,462</div>
+        <div class="stat-label">Synthetic training images generated via CycleGAN</div>
+        <div class="stat-source">Augmented from 450 base images</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Defect types: crack, porosity, spatter</div>
+        <div class="stat-source">From GD-Xray &amp; RIAWELC datasets</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Methodology</span>
+    </div>
+    <div class="content">
+      <p>The core challenge was generating realistic training data without access to real defect images. We designed a pipeline that transforms publicly available X-ray radiographs into RGB welding inspection images, then trains a detection model through progressive domain adaptation.</p>
+    </div>
+
+    <div class="image-container" style="margin-bottom: 2.5rem;">
+      <img src="images/welding-methodology.svg" alt="Welding defect detection pipeline: 6-step methodology from data collection to detection and evaluation" style="width:100%; max-width:100%;">
+    </div>
+
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Data Collection</h4>
+          <p>Sourced welding radiograph images from two public datasets: GD-Xray Welds and RIAWELC. These grayscale X-ray images contain labeled defects but differ significantly from the RGB camera images used in actual inspection environments.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Image Preprocessing</h4>
+          <p>Applied a four-stage preprocessing pipeline: contrast enhancement to reveal structural details, followed by median filtering (edge-preserving noise removal), Gaussian filtering (overall noise reduction), and wavelet filtering (frequency-level feature refinement). This sequence preserved critical defect features while suppressing artifacts.</p>
+        </div>
+      </div>
+      <div class="image-container" style="margin: 2rem 0;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+          <div style="padding: 10px; background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;">
+            <img src="images/preprocessing-original.png" alt="Original radiograph" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Original</div>
+          </div>
+          <div style="padding: 10px; background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;">
+            <img src="images/preprocessing-contrast.png" alt="After contrast enhancement" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Contrast</div>
+          </div>
+          <div style="padding: 10px; background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;">
+            <img src="images/preprocessing-gaussian.png" alt="After Gaussian filtering" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Gaussian</div>
+          </div>
+          <div style="padding: 10px; background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;">
+            <img src="images/preprocessing-wavelet.png" alt="After wavelet filtering" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Wavelet</div>
+          </div>
+          <div style="padding: 10px; background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;">
+            <img src="images/preprocessing-median.png" alt="After median filtering" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Median</div>
+          </div>
+          <div style="padding: 10px; background: var(--accent-light); border: 1.5px solid var(--accent); border-radius: 8px;">
+            <img src="images/preprocessing-all.png" alt="All filters applied" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; display:block;">
+            <div style="text-align:center; font-size:0.78rem; color:var(--accent); margin-top:0.6rem; font-family:'JetBrains Mono',monospace; font-weight:600;">All applied</div>
+          </div>
+        </div>
+        <div class="image-caption">Effect of each preprocessing stage on a radiograph image. The final image (All applied) combines all four filters — the input to CycleGAN translation.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Synthetic Data Generation</h4>
+          <p>Used CycleGAN to translate preprocessed grayscale radiographs into realistic RGB welding images. Generated three defect classes &mdash; crack, porosity, and spatter &mdash; each reflecting the visual characteristics of real welding defects. CycleGAN's unpaired training capability was key, as no paired radiograph-to-RGB data existed.</p>
+        </div>
+      </div>
+      <div class="image-container" style="margin-top: 2rem; margin-bottom: 2rem; border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.25rem 0.6rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <div>
+            <img src="images/crack-xray2rgb.png" alt="Crack defect: X-ray radiograph (left) vs CycleGAN-generated RGB image (right)" style="width:100%; border-radius: 6px; display:block;">
+            <div style="text-align:center; font-size:0.8rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Crack</div>
+          </div>
+          <div>
+            <img src="images/porosity-xray2rgb.png" alt="Porosity defect: X-ray radiograph (left) vs CycleGAN-generated RGB image (right)" style="width:100%; border-radius: 6px; display:block;">
+            <div style="text-align:center; font-size:0.8rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Porosity</div>
+          </div>
+          <div>
+            <img src="images/spatter-xray2rgb.png" alt="Spatter defect: X-ray radiograph (left) vs CycleGAN-generated RGB image (right)" style="width:100%; border-radius: 6px; display:block;">
+            <div style="text-align:center; font-size:0.8rem; color:var(--text-light); margin-top:0.6rem; font-family:'JetBrains Mono',monospace;">Spatter</div>
+          </div>
+        </div>
+        <div class="image-caption">X-ray radiograph (left) &rarr; CycleGAN-generated RGB synthetic image (right) for each defect class. Unpaired image translation enables domain adaptation without matched training pairs.</div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>Data Augmentation</h4>
+          <p>Expanded the 450 base CycleGAN-generated images to 1,462 training samples and 318 test samples through augmentation techniques, improving model generalization and reducing overfitting risk.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>Two-stage Transfer Learning</h4>
+          <p>Trained YOLOv5s in three phases: (1) pre-training on COCO for general visual features, (2) intermediate fine-tuning on two morphologically analogous datasets &mdash; a <em>Lunar Crater</em> dataset whose circular depression shapes closely resemble welding porosity, and a <em>Building Defects</em> dataset of concrete and structural cracks that mirror welding crack geometry &mdash; and (3) final fine-tuning on our synthetic welding defect data. The strategy exploits cross-domain visual analogy: by finding shapes in non-welding domains that look like welding defects, we give the model a stepping stone between general visual knowledge and welding-specific recognition. This is why two-stage transfer outperforms jumping directly to the target domain.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <h4>Detection &amp; Evaluation</h4>
+          <p>Evaluated YOLOv5s performance across four training conditions using mAP, precision, recall, and F1 score. All images processed at 256&times;256 resolution on NVIDIA RTX A6000 GPUs.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-container">
+      <img src="images/welding-detection.png" alt="Welding defect detection results showing crack, porosity, and spatter detection with bounding boxes">
+      <div class="image-caption">Detection results: COCO-only transfer learning (left) vs. two-stage transfer learning (right). Two-stage approach detects defects more precisely with fewer false positives.</div>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>Design rationale:</strong> Two-stage transfer learning bridges the domain gap progressively &mdash; COCO provides general visual features, Crater/Crack datasets introduce defect-like patterns, and the final stage specializes for welding. This staged approach yielded +9.1%p mAP improvement over training without transfer learning.</p>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <span class="t-heading-2">Methods &amp; Tools</span>
+      <div class="tech-stack">
+        <span class="tech-tag">CycleGAN</span>
+        <span class="tech-tag">YOLOv5s</span>
+        <span class="tech-tag">Transfer Learning</span>
+        <span class="tech-tag">Domain Adaptation</span>
+        <span class="tech-tag">Wavelet Filtering</span>
+        <span class="tech-tag">Data Augmentation</span>
+        <span class="tech-tag">NVIDIA RTX A6000</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY FINDINGS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Key Findings</span>
+    </div>
+
+    <div class="finding-list">
+      <div class="finding-item">
+        <div class="finding-number">01</div>
+        <div class="finding-content">
+          <h4>Two-stage transfer learning achieves 87.5% mAP</h4>
+          <p>The progressive training strategy (COCO &rarr; Crater/Crack &rarr; welding defects) achieved the highest performance across all metrics: 87.5% mAP (IoU 0.5), 90.3% precision, 85.1% recall, and 87.6 F1 score. Single-stage COCO transfer reached 85.2% mAP, while training from scratch yielded only 78.4%.</p>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-number">02</div>
+        <div class="finding-content">
+          <h4>Preprocessing is critical for synthetic data quality</h4>
+          <p>Applying the four-stage preprocessing pipeline before CycleGAN translation produced significantly more realistic synthetic images. Without preprocessing, generated images contained artifacts that degraded downstream detection performance. The contrast-then-filter sequence preserved defect features while removing noise that confused the generator.</p>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-number">03</div>
+        <div class="finding-content">
+          <h4>Synthetic data enables training without real defect images</h4>
+          <p>By combining CycleGAN domain translation with progressive transfer learning, we trained an effective defect detector entirely without real welding defect photographs. This approach is applicable to other industrial domains where real defect data is restricted or prohibitively expensive to collect.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="welding.pdf" target="_blank" rel="noopener" class="btn-secondary">Read Paper &rarr;</a>
+    </div>
+  </section>
+
+  <!-- WHY THIS MATTERS FOR HCI -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Business Impact</span>
+    </div>
+
+    <div class="blockquote">
+      <p>This project solved a fundamental data access problem in manufacturing AI &mdash; how to build defect detection when real defect images simply don't exist.</p>
+    </div>
+
+    <div class="content">
+      <p>At 87.5% mAP, the model demonstrates that synthetic data generation via CycleGAN, combined with progressive transfer learning, can produce production-viable defect detection without any real defect images. This eliminates the biggest bottleneck in manufacturing AI adoption: the cost and security restrictions around collecting labeled defect data.</p>
+      <p>The pipeline is domain-agnostic. The same approach &mdash; find a publicly available proxy dataset, translate it to the target visual domain, and bridge the gap with intermediate transfer learning &mdash; applies to any industrial inspection scenario where real defect data is restricted. Semiconductor wafer inspection, PCB quality control, and infrastructure monitoring all face the same data access barrier.</p>
+      <p>This project demonstrated that the right data engineering strategy can be more impactful than model architecture innovation. By designing a synthetic data pipeline that sidesteps a fundamental access constraint, we made automated defect detection feasible in environments where it was previously blocked by data availability, not by model capability.</p>
+    </div>
+  </section>
+
+  <!-- REFLECTION & WHAT'S NEXT -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Reflection &amp; What's Next</span>
+    </div>
+    <ul class="takeaway-list">
+      <li><strong>Synthetic data is a viable path when real data is inaccessible.</strong> CycleGAN combined with careful preprocessing produced training data sufficient for 87.5% mAP &mdash; demonstrating that domain translation can substitute for real-world data collection in constrained industrial settings.</li>
+      <li><strong>Progressive transfer learning outperforms single-stage approaches.</strong> The COCO &rarr; domain-adjacent &rarr; target pipeline consistently beat both direct transfer and training from scratch, suggesting that intermediate domain exposure helps models bridge large domain gaps.</li>
+      <li><strong>Testing on synthetic data alone is a clear limitation.</strong> All evaluation was conducted on CycleGAN-generated images, not real welding photographs. Validating with actual production data is the necessary next step to confirm real-world applicability.</li>
+      <li><strong>Domain expert collaboration is essential, not optional.</strong> Building a defect detection system without input from welding inspectors meant optimizing for technical metrics rather than practical utility. Future work should begin with understanding the inspection workflow before designing the model.</li>
+    </ul>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="index.html" class="btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to All Projects
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <span class="footer-credit">&copy; 2026 Yuna Sim</span>
+</footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

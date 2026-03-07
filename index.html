@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yuna Sim — AI Engineer</title>
+<meta name="description" content="Yuna Sim — AI Engineer specializing in LLM/RAG pipelines, computer vision, and multimodal AI solutions. MS AI Convergence, Ewha Womans University. Publications in color perception, computer vision, and RAG-based systems.">
+<meta property="og:title" content="Yuna Sim — AI Engineer">
+<meta property="og:description" content="AI Engineer specializing in LLM/RAG pipelines, computer vision, and multimodal AI solutions. MS AI Convergence, Ewha Womans University.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://finekiwi.github.io">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  /* ==========================================================================
+     COLOR SYSTEM — Derived from Korean Drama Color Grading Research
+
+     From the Money Heist cross-cultural color analysis:
+     Korean color grading was preferred 1.5× more (n=86, p<.05).
+     The dominant hue of Korean remake color grading (desaturated teal)
+     is used as the accent color throughout this site.
+     ========================================================================== */
+
+  :root {
+    /* Accent: Deep Teal from K-drama dominant hue */
+    --accent: #2D6A6A;
+    --accent-hover: #1F5252;
+    --accent-light: #F0F7F7;
+    --accent-secondary: #4A8E8E;
+
+    /* Neutrals */
+    --bg-primary: #FDFAF5;
+    --bg-secondary: #F7F2EA;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-light: #A3A3A3;
+    --border: #E8E5E1;
+    --border-light: #EFEFEF;
+
+    /* Shadows */
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.1);
+
+    /* Layout */
+    --max-width: 1080px;
+    --content-width: 720px;
+  }
+
+  /* ==========================================================================
+     RESET & BASE
+     ========================================================================== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent-hover);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a:hover { color: var(--accent-hover); }
+
+  img { max-width: 100%; display: block; }
+
+  /* ==========================================================================
+     TYPOGRAPHY — 3-tier system
+     ========================================================================== */
+  .t-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .t-heading-1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .t-heading-2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+  }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     NAV
+     ========================================================================== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(253, 250, 245, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1.5px;
+    background: var(--accent-secondary);
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* Mobile hamburger */
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-primary);
+  }
+
+  .nav-toggle svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  /* ==========================================================================
+     LAYOUT
+     ========================================================================== */
+  section {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+
+  .divider {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .divider::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ==========================================================================
+     HERO
+     ========================================================================== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 5rem;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-name {
+    margin-bottom: 0.75rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .hero-role {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.15s forwards;
+  }
+
+  .hero-tagline {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.75rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.45s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+
+  /* Color swatch grid — from research */
+  .hero-visual {
+    opacity: 0;
+    animation: fadeIn 1s ease 0.4s forwards;
+  }
+
+  .color-study {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 0.6fr;
+    gap: 6px;
+    width: 100%;
+    aspect-ratio: 4/5;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .swatch {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s ease;
+  }
+  .swatch:hover { transform: scale(0.97); }
+
+  .swatch-1 { background: #C7956D; }
+  .swatch-2 { background: #8B7355; }
+  .swatch-3 { background: #2C2C2C; }
+  .swatch-4 { background: #C4A265; }
+  .swatch-5 { background: #F3EBD8; grid-column: 1 / 3; }
+
+  .swatch-label {
+    position: absolute;
+    bottom: 8px; left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+  }
+  .swatch-5 .swatch-label { color: rgba(0,0,0,0.35); }
+
+  .color-study-caption {
+    margin-top: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  /* ==========================================================================
+     ABOUT — 2-column layout
+     ========================================================================== */
+  .about {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+
+  .about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+  }
+
+  .about-text p {
+    font-size: 1.02rem;
+    color: #3D3D3D;
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+
+  .research-interests {
+    margin-bottom: 2rem;
+  }
+
+  .interest-label {
+    margin-bottom: 0.75rem;
+  }
+
+  .interest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .interest-tag {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #3D3D3D;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+  .interest-tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .stat-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ==========================================================================
+     PROJECTS — Card layout with images
+     ========================================================================== */
+  .projects {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+
+  .project-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+  }
+
+  .project-card:hover {
+    background: var(--bg-secondary);
+  }
+
+
+  .project-thumbnail {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .project-thumbnail-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .project-video-poster {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .project-video-poster .play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    background: rgba(0,0,0,0.65);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .project-video-poster:hover .play-btn {
+    background: rgba(0,0,0,0.8);
+  }
+
+  .project-video-poster .play-btn::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 18px;
+    border-color: transparent transparent transparent #fff;
+    margin-left: 3px;
+  }
+
+  .project-body {
+    padding: 2rem;
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .project-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  .project-context {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .project-metric {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .project-metric-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .project-metric-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+  }
+
+  .project-content h4 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1.5rem;
+    margin-bottom: 0.6rem;
+  }
+  .project-content h4:first-child { margin-top: 0; }
+
+  .project-content p {
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+
+  .project-content ul {
+    list-style: none;
+    font-size: 0.95rem;
+    color: #3D3D3D;
+  }
+
+  .project-content ul li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .project-content ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .tech-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+  }
+
+  .hci-relevance {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    margin-top: 1.5rem;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .hci-relevance p {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  .case-study-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  .case-study-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .project-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .project-actions .case-study-link {
+    margin-top: 0;
+  }
+  .btn-sm {
+    padding: 0.55rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  /* ==========================================================================
+     PUBLICATIONS — Indexed list
+     ========================================================================== */
+  .publications {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+
+  .pub-list {
+    margin-top: 2rem;
+  }
+
+  .pub-item {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-light);
+  }
+  .pub-item:last-child { border-bottom: 1px solid var(--border-light); }
+
+  .pub-index {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    padding-top: 0.15rem;
+  }
+
+  .pub-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.02rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.45;
+    margin-bottom: 0.35rem;
+  }
+
+  .pub-authors {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.2rem;
+  }
+
+  .pub-authors .first-author {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .pub-venue {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .pub-type {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    padding: 0.12rem 0.5rem;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+  }
+
+  /* ==========================================================================
+     CONTACT — 2-column with arrow links
+     ========================================================================== */
+  .contact {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+  }
+
+  .contact-text p {
+    font-size: 1.02rem;
+    color: #3D3D3D;
+    line-height: 1.75;
+    max-width: 440px;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.15rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+  .contact-links a:last-child { border-bottom: 1px solid var(--border); }
+  .contact-links a:hover { padding-left: 0.75rem; color: var(--accent); }
+
+  .contact-arrow {
+    transition: transform 0.2s ease;
+  }
+  .contact-links a:hover .contact-arrow {
+    transform: translateX(4px);
+  }
+
+  .contact-links svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .contact-link-content {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* ==========================================================================
+     FOOTER
+     ========================================================================== */
+  footer {
+    padding: 3rem 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .footer-note {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    font-style: italic;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    display: block;
+  }
+
+  /* ==========================================================================
+     ANIMATIONS
+     ========================================================================== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE
+     ========================================================================== */
+  @media (max-width: 900px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    .hero-visual {
+      max-width: 280px;
+    }
+    .about-content {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    .contact-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    .nav-toggle { display: block; }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: var(--bg-primary);
+      flex-direction: column;
+      padding: 1rem 2rem 1.5rem;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-links.open {
+      display: flex;
+    }
+  }
+
+  @media (max-width: 600px) {
+    section { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .nav-inner { padding: 0.8rem 1.25rem; }
+    .stat-grid { grid-template-columns: 1fr; }
+    .project-body { padding: 1.5rem; }
+    .project-header { flex-direction: column; gap: 0.5rem; }
+    .project-metric { text-align: left; }
+    .project-card { border-left-width: 3px; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .hero-visual { max-width: 220px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Yuna Sim</a>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="#about" onclick="document.querySelector('.nav-links').classList.remove('open')">About</a></li>
+      <li><a href="#projects" onclick="document.querySelector('.nav-links').classList.remove('open')">Projects</a></li>
+      <li><a href="#publications" onclick="document.querySelector('.nav-links').classList.remove('open')">Publications</a></li>
+      <li><a href="#contact" onclick="document.querySelector('.nav-links').classList.remove('open')">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <h1 class="t-display hero-name">Yuna Sim</h1>
+      <p class="hero-role">AI Engineer · LLM/RAG · Computer Vision</p>
+      <p class="hero-tagline">Building end-to-end AI solutions — from RAG pipelines and LLM integration to computer vision systems for real-world deployment</p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">View Projects</a>
+        <a href="#publications" class="btn-secondary">Publications</a>
+        <a href="#contact" class="btn-secondary">Contact</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="color-study">
+        <div class="swatch swatch-1"><span class="swatch-label">L*66 a*14 b*28</span></div>
+        <div class="swatch swatch-2"><span class="swatch-label">L*50 a*5 b*20</span></div>
+        <div class="swatch swatch-3"><span class="swatch-label">L*18 a*0 b*0</span></div>
+        <div class="swatch swatch-4"><span class="swatch-label">L*68 a*5 b*36</span></div>
+        <div class="swatch swatch-5"><span class="swatch-label">L*93 a*0 b*10</span></div>
+      </div>
+      <p class="color-study-caption">Color palette inspired by Korean drama color grading preference study (n=86, p&lt;.05)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-label">
+    <span class="t-heading-2">About</span>
+  </div>
+  <div class="about-content reveal">
+    <div class="about-text">
+      <p>I'm an AI engineer who builds end-to-end intelligent systems — from RAG-based chatbots for public service navigation, to computational analysis pipelines for visual data, to computer vision systems for industrial quality inspection.</p>
+      <p>I hold an M.S. in AI Convergence and a dual B.S./B.A. in Electronics Engineering and Multimedia from Ewha Womans University. My focus is on turning research into deployable solutions — designing LLM pipelines, training and optimizing CV models, and integrating AI into real-world workflows.</p>
+    </div>
+    <div>
+      <div class="research-interests">
+        <p class="t-heading-2 interest-label">Research Interests</p>
+        <div class="interest-tags">
+          <span class="interest-tag">LLM / RAG</span>
+          <span class="interest-tag">Multimodal AI</span>
+          <span class="interest-tag">Computer Vision</span>
+          <span class="interest-tag">OCR / Document AI</span>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Publications</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">2</div>
+          <div class="stat-label">Patents Filed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">Top 20</div>
+          <div class="stat-label">/ 181 teams</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">87.5%</div>
+          <div class="stat-label">Defect Detection mAP</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROJECTS -->
+<section class="projects" id="projects">
+  <div class="section-label">
+    <span class="t-heading-2">Projects</span>
+  </div>
+
+  <!-- Welfare Compass -->
+  <div class="project-card reveal">
+    <div class="project-video-poster" style="background-image: url('images/Youtube_thumbnail.png')" onclick="this.outerHTML='<iframe class=\'project-thumbnail-video\' src=\'https://www.youtube.com/embed/TMOHp0wMUXM?autoplay=1\' title=\'Welfare Compass Demo\' allowfullscreen></iframe>'">
+      <div class="play-btn"></div>
+    </div>
+    <div class="project-body">
+      <div class="project-header">
+        <div>
+          <h3>Welfare Compass</h3>
+          <p class="project-context">Seoul AI Hackathon · Top 20 / 181 teams · 2025</p>
+        </div>
+        <div class="project-metric">
+          <div class="project-metric-value">Top 20</div>
+          <div class="project-metric-label">of 181 teams</div>
+        </div>
+      </div>
+      <div class="project-content">
+        <h4>Problem</h4>
+        <p>300+ welfare policies scattered across documents — citizens struggle to determine eligibility, especially those with low digital literacy.</p>
+
+        <h4>Approach</h4>
+        <ul>
+          <li>RAG pipeline using LangChain + FAISS for policy document retrieval</li>
+          <li>Natural language query processing to extract relevant policies and eligibility criteria</li>
+          <li>Streamlit-based conversational interface for accessible interaction</li>
+        </ul>
+
+        <h4>Outcome</h4>
+        <p>Demonstrated effective retrieval for complex policy queries, advancing to hackathon finals.</p>
+
+        <h4>Tech Stack</h4>
+        <div class="tech-stack">
+          <span class="tech-tag">RAG</span>
+          <span class="tech-tag">LangChain</span>
+          <span class="tech-tag">FAISS</span>
+          <span class="tech-tag">GPT API</span>
+          <span class="tech-tag">Streamlit</span>
+        </div>
+
+        <div class="hci-relevance">
+          <p><strong>Business Impact:</strong> Reduces citizen service center workload by automating policy matching — a scalable RAG solution applicable to any document-heavy consultation workflow.</p>
+        </div>
+
+        <div class="project-actions">
+          <a href="welfare-compass.html" class="case-study-link">View Full Case Study →</a>
+          <a href="https://welfare-compass.streamlit.app" target="_blank" rel="noopener" class="btn-primary btn-sm">Try Live Demo →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drama Color Analysis -->
+  <div class="project-card reveal">
+    <img class="project-thumbnail" src="images/drama-color.png" alt="Color comparison between Korean remake and Spanish original versions of Money Heist" loading="lazy">
+    <div class="project-body">
+      <div class="project-header">
+        <div>
+          <h3>Drama Color Pattern Analysis</h3>
+          <p class="project-context">Published · Journal of the Korean Data Analysis Society · Feb 2025</p>
+        </div>
+        <div class="project-metric">
+          <div class="project-metric-value">1.5×</div>
+          <div class="project-metric-label">preference (p&lt;.05)</div>
+        </div>
+      </div>
+      <div class="project-content">
+        <h4>Problem</h4>
+        <p>Color's impact on viewer emotional engagement was based on subjective judgment — no quantitative analysis existed for cross-cultural comparison.</p>
+
+        <h4>Approach</h4>
+        <ul>
+          <li>ConvNeXtLarge for scene clustering across drama episodes</li>
+          <li>HSV/LAB color metrics comparing Korean vs Spanish versions of Money Heist</li>
+          <li>User survey (n=86) for preference validation</li>
+        </ul>
+
+        <h4>Outcome</h4>
+        <p>Korean color grading preferred 1.5× overall across the full sample (p&lt;.05). First author publication.</p>
+
+        <h4>Tech Stack</h4>
+        <div class="tech-stack">
+          <span class="tech-tag">ConvNeXtLarge</span>
+          <span class="tech-tag">CIELAB</span>
+          <span class="tech-tag">HSV Analysis</span>
+          <span class="tech-tag">User Study</span>
+        </div>
+
+        <div class="hci-relevance">
+          <p><strong>Business Impact:</strong> Data-driven framework for visual content optimization — applicable to automated color grading pipelines, content recommendation, and A/B testing visual assets at scale.</p>
+        </div>
+
+        <div class="project-actions">
+          <a href="drama-color.html" class="case-study-link">View Full Case Study &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welding Defect Detection -->
+  <div class="project-card reveal">
+    <img class="project-thumbnail" src="images/welding-detection.png" alt="Welding defect detection results showing crack, porosity, and spatter detection" loading="lazy">
+    <div class="project-body">
+      <div class="project-header">
+        <div>
+          <h3>Welding Defect Detection</h3>
+          <p class="project-context">Presented at IPIU 2024 · First Author</p>
+        </div>
+        <div class="project-metric">
+          <div class="project-metric-value">87.5%</div>
+          <div class="project-metric-label">mAP score</div>
+        </div>
+      </div>
+      <div class="project-content">
+        <h4>Problem</h4>
+        <p>No real defect images available in manufacturing environments due to security and cost constraints — severe training data shortage.</p>
+
+        <h4>Approach</h4>
+        <ul>
+          <li>CycleGAN for domain adaptation (X-ray radiographs → inspection images)</li>
+          <li>Preprocessing pipeline (contrast enhancement, wavelet filtering) to suppress artifacts</li>
+          <li>YOLOv5 with two-stage transfer learning (COCO → synthetic defects)</li>
+        </ul>
+
+        <h4>Outcome</h4>
+        <p>87.5% mAP achieved on synthetic-to-real defect detection. First author conference paper.</p>
+
+        <h4>Tech Stack</h4>
+        <div class="tech-stack">
+          <span class="tech-tag">CycleGAN</span>
+          <span class="tech-tag">YOLOv5</span>
+          <span class="tech-tag">Domain Adaptation</span>
+          <span class="tech-tag">Transfer Learning</span>
+        </div>
+
+        <div class="hci-relevance">
+          <p><strong>Business Impact:</strong> Eliminates dependency on restricted real-world defect data — enabling automated quality inspection deployment in manufacturing environments where labeled data is unavailable.</p>
+        </div>
+
+        <div class="project-actions">
+          <a href="welding.html" class="case-study-link">View Full Case Study &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PUBLICATIONS -->
+<section class="publications" id="publications">
+  <div class="section-label">
+    <span class="t-heading-2">Publications</span>
+  </div>
+
+  <div class="pub-list">
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">01</div>
+      <div>
+        <div class="pub-title">"A Preference Analysis of Color: A Pilot Study Comparing the Drama Money Heist Original and Remake Versions"</div>
+        <div class="pub-authors"><span class="first-author">Yuna Sim</span>, Hoyoung Yoon</div>
+        <div class="pub-venue">Journal of the Korean Data Analysis Society, Feb 2025</div>
+        <span class="pub-type">Journal · 1st Author</span>
+      </div>
+    </div>
+
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">02</div>
+      <div>
+        <div class="pub-title">"Global Illumination Estimation Using Local Patch Selection"</div>
+        <div class="pub-authors"><span class="first-author">Yuna Sim</span>, Hyejin Oh, Jewon Kang</div>
+        <div class="pub-venue">The Korean Institute of Broadcast and Media Engineers (KIBME), Nov 2024</div>
+        <span class="pub-type">Conference · 1st Author</span>
+      </div>
+    </div>
+
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">03</div>
+      <div>
+        <div class="pub-title">"Deep Learning-Based Fast Auto White Balancing Algorithm Development for Multi-View Video"</div>
+        <div class="pub-authors">Hyejin Oh, <span class="first-author">Yuna Sim</span>, Jewon Kang</div>
+        <div class="pub-venue">The Korean Institute of Broadcast and Media Engineers (KIBME), Jun 2024</div>
+        <span class="pub-type">Conference</span>
+      </div>
+    </div>
+
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">04</div>
+      <div>
+        <div class="pub-title">"Welding defect detection using synthetic data and object recognition algorithms"</div>
+        <div class="pub-authors"><span class="first-author">Yuna Sim</span>, Jewon Kang</div>
+        <div class="pub-venue">Image Processing and Image Understanding (IPIU), Feb 2024</div>
+        <span class="pub-type">Conference · 1st Author</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PATENTS -->
+<section class="publications" style="padding-top: 2rem;">
+  <div class="section-label">
+    <span class="t-heading-2">Patents</span>
+  </div>
+
+  <div class="pub-list">
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">P1</div>
+      <div>
+        <div class="pub-title">"Global Illumination Estimation Method Based on Local Illumination Estimation and Image Processing Apparatus"</div>
+        <div class="pub-authors"><span class="first-author">Yuna Sim</span>, Hyejin Oh, Jewon Kang</div>
+        <div class="pub-venue">Korean Patent No. 10-2024-0164675, Filed 2024</div>
+      </div>
+    </div>
+
+    <div class="pub-item reveal">
+      <div class="pub-index t-mono">P2</div>
+      <div>
+        <div class="pub-title">"Auto White Balancing Method for Multi-View Video and Image Processing Apparatus"</div>
+        <div class="pub-authors"><span class="first-author">Yuna Sim</span>, Hyejin Oh, Jewon Kang</div>
+        <div class="pub-venue">Korean Patent No. 10-2024-0162001, Filed 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="section-label">
+    <span class="t-heading-2">Contact</span>
+  </div>
+  <div class="contact-grid reveal">
+    <div class="contact-text">
+      <h2 class="t-heading-1" style="margin-bottom: 1.25rem;">Let's connect</h2>
+      <p>I'm looking for opportunities in AI engineering, LLM solution development, and AI consulting — open to roles where I can design and deploy intelligent systems that solve real business problems.</p>
+    </div>
+    <div class="contact-links">
+      <a href="mailto:syna02178@gmail.com">
+        <span class="contact-link-content">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+          syna02178@gmail.com
+        </span>
+        <span class="contact-arrow">→</span>
+      </a>
+      <a href="https://github.com/finekiwi" target="_blank">
+        <span class="contact-link-content">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </span>
+        <span class="contact-arrow">→</span>
+      </a>
+      <a href="https://www.linkedin.com/in/yunasim/" target="_blank">
+        <span class="contact-link-content">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          LinkedIn
+        </span>
+        <span class="contact-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-note">Color system inspired by K-drama color grading preference study</span>
+  <span class="footer-credit">© 2026 Yuna Sim</span>
+</footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

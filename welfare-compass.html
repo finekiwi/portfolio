@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welfare Compass | Yuna Sim</title>
+<meta name="description" content="Welfare Compass: RAG-based conversational AI for Seoul welfare policy navigation. Seoul AI Hackathon Top 20 / 181 teams.">
+<meta property="og:title" content="Welfare Compass — Case Study | Yuna Sim">
+<meta property="og:description" content="RAG-based conversational AI for Seoul welfare policy navigation. Seoul AI Hackathon Top 20 / 181 teams.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://finekiwi.github.io/welfare-compass.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent: #2D6A6A;
+    --accent-hover: #1F5252;
+    --accent-light: #F0F7F7;
+    --accent-secondary: #4A8E8E;
+
+    --bg-primary: #FDFAF5;
+    --bg-secondary: #F0F0ED;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-light: #A3A3A3;
+    --border: #E8E5E1;
+    --border-light: #EFEFEF;
+
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    --max-width: 1080px;
+    --content-width: 840px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent-hover);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a:hover { color: var(--accent-hover); }
+  img { max-width: 100%; display: block; }
+
+  /* Typography — same 3-tier system */
+  .t-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .t-heading-1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .t-heading-2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+  }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     NAV — reused from main
+     ========================================================================== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(253, 250, 245, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .nav-back:hover { color: var(--text-primary); }
+  .nav-back svg { width: 16px; height: 16px; }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  /* ==========================================================================
+     LAYOUT
+     ========================================================================== */
+  main {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-label span {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  section {
+    padding: 3.5rem 0;
+  }
+
+  section + section {
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* ==========================================================================
+     HERO
+     ========================================================================== */
+  .hero {
+    padding-top: 7rem;
+    padding-bottom: 3rem;
+    border-top: none;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    margin-bottom: 2.5rem;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-meta-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .hero-meta-label {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .hero-meta-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .hero-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  /* ==========================================================================
+     CONTENT
+     ========================================================================== */
+  .content p {
+    font-size: 1rem;
+    color: #3D3D3D;
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+  .content p:last-child { margin-bottom: 0; }
+
+  /* Stats — DM Serif number + Inter label, border-bottom only */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .stat-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .stat-source {
+    font-size: 0.6rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+  }
+
+  /* Problem cards — simple, no background card */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .problem-item h4 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+  }
+
+  .problem-item p {
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+
+  /* Comparison gallery */
+  .comparison-gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .comparison-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .comparison-item img {
+    width: 100%;
+    height: 240px;
+    object-fit: contain;
+    background: #fff;
+    display: block;
+  }
+
+  .comparison-label {
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 768px) {
+    .comparison-gallery {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Highlight — teal left border */
+  .highlight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    margin: 2rem 0;
+  }
+
+  .highlight-box p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* ==========================================================================
+     DISCOVERY — finding → decision mapping
+     ========================================================================== */
+  .discovery-method {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  .persona-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-white);
+    margin-bottom: 2rem;
+  }
+
+  .persona-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    object-fit: cover;
+  }
+
+  .persona-info h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+
+  .persona-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .persona-quote {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .insight-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .insight-card {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .insight-finding {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-white);
+  }
+
+  .insight-finding .insight-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .insight-finding h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  .insight-finding p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .insight-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .insight-decision {
+    padding: 1.25rem;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .insight-decision .insight-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .insight-decision h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  .insight-decision p {
+    font-size: 0.88rem;
+    color: #3D3D3D;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .insight-card {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .insight-arrow {
+      padding: 0.25rem 0;
+      transform: rotate(90deg);
+    }
+  }
+
+  /* ==========================================================================
+     VIDEO & IMAGE
+     ========================================================================== */
+  .video-container {
+    margin: 2rem 0;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+    aspect-ratio: 16 / 9;
+    cursor: pointer;
+  }
+
+  .video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .video-poster {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .video-poster .play-btn {
+    width: 64px;
+    height: 64px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+  }
+
+  .video-poster:hover .play-btn {
+    background: rgba(0,0,0,0.85);
+  }
+
+  .video-poster .play-btn::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 12px 0 12px 22px;
+    border-color: transparent transparent transparent #fff;
+    margin-left: 4px;
+  }
+
+  .image-container {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .image-container img {
+    width: 100%;
+    display: block;
+  }
+
+  .hackathon-photo {
+    filter: grayscale(30%) sepia(15%) contrast(0.9);
+  }
+
+  .image-caption {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ==========================================================================
+     SCREENSHOT GALLERY
+     ========================================================================== */
+  .screenshot-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+  .screenshot-gallery .screenshot-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .screenshot-gallery .screenshot-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  }
+  .screenshot-gallery img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+  }
+  .screenshot-gallery .screenshot-label {
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+  @media (max-width: 768px) {
+    .screenshot-gallery {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ==========================================================================
+     PROCESS STEPS
+     ========================================================================== */
+  .process-steps {
+    margin: 2rem 0;
+  }
+
+  .process-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .process-step:last-child { margin-bottom: 0; }
+
+  .step-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .step-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ==========================================================================
+     CHALLENGES & SOLUTIONS
+     ========================================================================== */
+  .challenge-group {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+  .challenge-group:last-child { margin-bottom: 0; }
+
+  .challenge-block {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+  }
+
+  .challenge-block .challenge-label,
+  .solution-block .challenge-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .challenge-block .challenge-label {
+    color: var(--text-light);
+  }
+
+  .solution-block .challenge-label {
+    color: var(--accent);
+  }
+
+  .challenge-block h4,
+  .solution-block h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+  }
+
+  .challenge-block p,
+  .solution-block p {
+    font-size: 0.88rem;
+    color: #3D3D3D;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .challenge-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .solution-block {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem;
+    border-radius: 0 6px 6px 0;
+  }
+
+  @media (max-width: 768px) {
+    .challenge-group {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .challenge-arrow {
+      padding: 0.25rem 0;
+      transform: rotate(90deg);
+    }
+  }
+
+  /* ==========================================================================
+     TECH STACK — same as main
+     ========================================================================== */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .tech-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+  }
+
+  /* ==========================================================================
+     QUOTE — blockquote with teal left border
+     ========================================================================== */
+  .blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .blockquote p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+
+  .blockquote .attribution {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: normal;
+  }
+
+  /* ==========================================================================
+     TAKEAWAYS
+     ========================================================================== */
+  .takeaway-list {
+    list-style: none;
+    margin: 1.5rem 0;
+  }
+
+  .takeaway-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+  .takeaway-list li:last-child { margin-bottom: 0; }
+
+  .takeaway-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  /* ==========================================================================
+     BACK BUTTON — btn-secondary from main
+     ========================================================================== */
+  .back-section {
+    padding: 3rem 0 5rem;
+    text-align: center;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: calc(0.55rem - 1.5px) 1.2rem;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 106, 106, 0.3);
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  /* ==========================================================================
+     FOOTER
+     ========================================================================== */
+  footer {
+    padding: 3rem 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    display: block;
+  }
+
+  /* ==========================================================================
+     ANIMATIONS — same reveal as main
+     ========================================================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE
+     ========================================================================== */
+  @media (max-width: 768px) {
+    .hero-meta {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    .problem-grid {
+      grid-template-columns: 1fr;
+    }
+    section {
+      padding: 2.5rem 0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    main { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .nav-inner { padding: 0.8rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV — reused from main, with back link -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Portfolio
+    </a>
+    <a href="index.html" class="nav-logo">Yuna Sim</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="t-display reveal">Welfare Compass</h1>
+    <p class="hero-subtitle reveal">A conversational AI agent that helps Seoul citizens discover welfare benefits they're eligible for through natural dialogue.</p>
+
+    <div class="hero-meta reveal">
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Timeline</span>
+        <span class="hero-meta-value">Nov–Dec 2025<br>(preliminary + 2-day finals)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Team</span>
+        <span class="hero-meta-value">4 members</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">My Role</span>
+        <span class="hero-meta-value">Project Lead, UX Research & Design<br>RAG Pipeline Design</span>
+      </div>
+    </div>
+
+    <div class="hero-actions reveal">
+      <span class="hero-result">Seoul AI Hackathon — Top 20 / 181 teams</span>
+      <a href="https://welfare-compass.streamlit.app" target="_blank" rel="noopener" class="btn-primary">Try Live Demo →</a>
+      <a href="https://github.com/finekiwi/welfare-compass" target="_blank" rel="noopener" class="btn-secondary">GitHub →</a>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>The Problem</span>
+    </div>
+    <div class="content">
+      <p>Seoul offers over 300 welfare programs for its citizens, yet a significant portion of eligible residents never receive the benefits they qualify for. The information is scattered across multiple platforms, buried in complex eligibility criteria, and written in bureaucratic language that's difficult to parse.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-number">86%</div>
+        <div class="stat-label">give up thinking "I'm probably not eligible"</div>
+        <div class="stat-source">Seoul Welfare Survey, 2020</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">48%</div>
+        <div class="stat-label">of eligible citizens don't receive benefits</div>
+        <div class="stat-source">National Indicators, MOHW 2024</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">300+</div>
+        <div class="stat-label">Seoul welfare programs across multiple platforms</div>
+        <div class="stat-source">Seoul Open Data Portal</div>
+      </div>
+    </div>
+
+    <div class="problem-grid">
+      <div class="problem-item">
+        <h4>Existing Solutions Fall Short</h4>
+        <p>Platforms like Seoul Talk and Bokjiro simply list links without automatic condition matching. Users must manually check each policy's requirements.</p>
+      </div>
+      <div class="problem-item">
+        <h4>Information Overload</h4>
+        <p>With 300+ policies, each with complex eligibility criteria involving age, income, employment status, and residency requirements, citizens face decision paralysis.</p>
+      </div>
+    </div>
+
+    <div class="comparison-gallery">
+      <div class="comparison-item">
+        <img src="images/seoultalk.png" alt="Seoul Talk chatbot showing category links instead of personalized answers" loading="lazy">
+        <div class="comparison-label">Seoul Talk — KakaoTalk chatbot, category selection → link click, no automatic condition matching</div>
+      </div>
+      <div class="comparison-item">
+        <img src="images/bokjiro.png" alt="Bokjiro website requiring manual checkbox filtering across dozens of criteria" loading="lazy">
+        <div class="comparison-label">Bokjiro — government welfare portal, checkbox filtering, users must judge their own eligibility</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <p>van Oorschot's welfare non-take-up model identifies the first barrier as <strong>self-censorship</strong> — 86% of Seoul residents didn't apply because they assumed they weren't eligible. Welfare Compass targets this threshold stage.</p>
+    </div>
+  </section>
+
+  <!-- USER DISCOVERY -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>User Discovery</span>
+    </div>
+    <div class="content">
+      <p>Before building anything, I conducted informal interviews with ~8 peers in my bootcamp cohort — all Seoul residents in their late 20s, the exact demographic eligible for youth welfare programs.</p>
+      <p>Most had never applied for welfare benefits. The reasons clustered around three patterns:</p>
+    </div>
+
+    <div class="discovery-method">Informal interviews · n ≈ 8 · Bootcamp cohort, late-20s, Seoul residents</div>
+
+    <div class="persona-card">
+      <img class="persona-avatar" src="images/YujinKim.png" alt="Persona: Yujin Kim">
+      <div class="persona-info">
+        <h4>Yujin, 27</h4>
+        <div class="persona-meta">Unemployed · Single · Renting in Seoul · Lives alone</div>
+        <div class="persona-quote">"I figured welfare was for low-income families. I never thought someone like me could qualify for anything."</div>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <!-- Finding 1: Awareness gap -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>"I didn't know I was eligible"</h4>
+          <p>Participants assumed welfare programs were for low-income households only, unaware that Seoul offers 300+ welfare programs, many of which target young adults.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Design Decision</div>
+          <h4>Proactive matching</h4>
+          <p>Users don't know what they qualify for, so the system extracts context through conversation and matches programs automatically — no prior knowledge required.</p>
+        </div>
+      </div>
+
+      <!-- Finding 2: Fragmented info -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>"I tried searching but gave up"</h4>
+          <p>Those who did search found information scattered across Seoul Talk, Bokjiro, and district office websites with no unified entry point. Most gave up within minutes.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Design Decision</div>
+          <h4>Unified retrieval</h4>
+          <p>Instead of sending users across multiple platforms, we consolidated ~100 curated programs into a single searchable database with ensemble retrieval (FAISS + BM25).</p>
+        </div>
+      </div>
+
+      <!-- Finding 3: High friction -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>"It's not worth the hassle"</h4>
+          <p>Even when participants found a potentially relevant program, complex eligibility criteria and lengthy application forms made the expected effort feel disproportionate to the uncertain benefit.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Design Decision</div>
+          <h4>Zero-effort interaction</h4>
+          <p>Instead of forms and filters, users describe their situation in natural language. The system handles eligibility matching and shows benefit details before any application commitment.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <p>These findings converged on one insight: the barrier isn't information availability — it's the <strong>effort required to find and process it</strong>. This led us to choose a conversational interface that shifts the burden from user to system.</p>
+    </div>
+  </section>
+
+  <!-- SOLUTION -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Solution Overview</span>
+    </div>
+    <div class="content">
+      <p>Welfare Compass is a conversational AI agent that extracts user profile information through natural dialogue and matches it against a manually curated welfare policy database using RAG (Retrieval-Augmented Generation). For the hackathon, we curated ~100 Seoul welfare programs covering housing, employment, living expenses, and education.</p>
+      <p>Instead of requiring users to fill out forms or navigate complex menus, they simply describe their situation: "I'm a 28-year-old freelancer living in Gangnam, looking for housing support." The system automatically extracts relevant attributes and finds matching welfare programs.</p>
+    </div>
+
+    <div class="screenshot-gallery">
+      <div class="screenshot-item">
+        <img src="images/chat1.png" alt="Chatbot conversation start: user describes their situation in natural language while their profile is displayed on the left sidebar" loading="lazy">
+        <div class="screenshot-label">01 — Natural language input with auto-extracted user profile</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/chat2.png" alt="Chatbot recommends three personalized welfare programs with summary cards" loading="lazy">
+        <div class="screenshot-label">02 — Personalized recommendations with welfare program cards</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/chat3.png" alt="User asks about eligibility and application steps, chatbot provides detailed guidance" loading="lazy">
+        <div class="screenshot-label">03 — Follow-up Q&A: eligibility check & application guide</div>
+      </div>
+    </div>
+
+    <div class="video-container" id="demo-video">
+      <div class="video-poster" style="background-image: url('images/Youtube_thumbnail.png')" onclick="this.parentElement.innerHTML='<iframe src=\'https://www.youtube.com/embed/TMOHp0wMUXM?autoplay=1\' title=\'Welfare Compass Demo\' allowfullscreen style=\'width:100%;height:100%;border:none;display:block\'></iframe>'">
+        <div class="play-btn"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>System Architecture</span>
+    </div>
+    <div class="content">
+      <p>I designed a RAG-based pipeline using LangChain for orchestration. The key insight was that welfare policies are frequently updated, so we needed a system that could incorporate changes through document updates alone — without model retraining.</p>
+    </div>
+
+    <div class="image-container">
+      <img src="images/welfare-architecture.svg" alt="Welfare Compass System Architecture showing Streamlit frontend, LangChain orchestration, FAISS vector DB, and BM25 ensemble retrieval">
+      <div class="image-caption">System Architecture: User query flows through Streamlit to the retrieval pipeline, which orchestrates intent detection, ensemble retrieval (FAISS + BM25), and GPT response generation.</div>
+    </div>
+
+    <div class="image-container">
+      <img src="images/welfare-flow-en.svg" alt="User flow diagram showing intent detection, information extraction, and welfare matching process">
+      <div class="image-caption">Conversation Flow: The system detects user intent, extracts profile information through dialogue, and matches against welfare eligibility criteria.</div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <span class="t-heading-2">Tech Stack</span>
+      <div class="tech-stack">
+        <span class="tech-tag">Python</span>
+        <span class="tech-tag">LangChain</span>
+        <span class="tech-tag">FAISS</span>
+        <span class="tech-tag">BM25</span>
+        <span class="tech-tag">GPT API</span>
+        <span class="tech-tag">Streamlit</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHALLENGES & SOLUTIONS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Key Challenges & Solutions</span>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Low retrieval accuracy with vector search alone</h4>
+        <p>Initial tests showed that semantic search (FAISS) missed relevant policies when user queries used different terminology than the policy documents.</p>
+      </div>
+      <div class="challenge-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>Ensemble retrieval with BM25</h4>
+        <p>A teammate contributed a BM25 keyword matching module to complement the FAISS vector search. This hybrid ensemble approach captured both semantic meaning and exact keyword matches, significantly improving retrieval accuracy.</p>
+      </div>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Inconsistent and hard-to-understand responses</h4>
+        <p>Early feedback indicated that responses lacked consistency and used technical welfare terminology that users couldn't understand.</p>
+      </div>
+      <div class="challenge-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>Iterative prompt engineering</h4>
+        <p>Redesigned prompts to ensure responses were grounded only in retrieved documents. Experimented extensively with converting bureaucratic language to everyday expressions. Tested against real user question patterns to refine response quality.</p>
+      </div>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Team alignment under time pressure</h4>
+        <p>After advancing to finals, team members wanted to build out backend/frontend infrastructure. With limited time remaining, this risked delivering an incomplete product.</p>
+      </div>
+      <div class="challenge-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>MVP-first approach with clear prioritization</h4>
+        <p>Advocated for "working MVP over perfect architecture." Built Streamlit-based prototype overnight, demonstrated its viability to the team, and aligned everyone around completing a functional product rather than an ambitious but incomplete system.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Results & Feedback</span>
+    </div>
+
+    <div class="image-container">
+      <img src="images/hackathon-dev.jpg" alt="Development session at 2025 SeSAC AI Hackathon" class="hackathon-photo">
+      <div class="image-caption">2025 SeSAC Hackathon Finals — Development session, Day 1</div>
+    </div>
+
+    <div class="blockquote">
+      <p>Good topic and planning — this seems like something citizens could actually use right away.</p>
+      <div class="attribution">— Hackathon Judge Panel</div>
+    </div>
+
+    <div class="content">
+      <p>The project advanced to the finals, placing in the top 20 among 181 competing teams. Beyond the competition result, the judges specifically noted the practical applicability of the service and its potential for real-world impact.</p>
+    </div>
+  </section>
+
+  <!-- REFLECTION -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Reflection & Learnings</span>
+    </div>
+    <ul class="takeaway-list">
+      <li><strong>User context matters more than technical sophistication.</strong> Understanding why people give up on welfare searches (complexity, self-doubt about eligibility) shaped every design decision.</li>
+      <li><strong>Constraints force clarity.</strong> The tight hackathon timeline forced us to identify what truly mattered: a working system that could demonstrate the core value proposition.</li>
+      <li><strong>RAG is powerful for frequently-updated domains.</strong> Welfare policies change constantly. Choosing RAG over fine-tuning meant we could incorporate policy updates through simple document refresh.</li>
+      <li><strong>Hybrid retrieval outperforms single approaches.</strong> Combining semantic search with keyword matching addressed the vocabulary mismatch between user queries and policy documents.</li>
+      <li><strong>Testing with proxy users has limits.</strong> Our interviewees were digitally fluent bootcamp peers — real welfare applicants likely face different barriers around language complexity, trust, and digital literacy.</li>
+    </ul>
+
+  </section>
+
+  <!-- WHAT'S NEXT -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>What's Next</span>
+    </div>
+    <div class="content">
+      <p>The hackathon MVP validated the core concept, but there's significant room for improvement in both the technical system and the research approach:</p>
+    </div>
+    <ul class="takeaway-list">
+        <li><strong>Usability testing with real welfare applicants</strong> — partnering with community centers or welfare offices to observe how actual target users interact with the system, especially those with lower digital literacy.</li>
+        <li><strong>Retrieval optimization</strong> — evaluating chunking strategies, reranking models, and hybrid retrieval configurations to improve answer accuracy and reduce hallucination on edge-case queries. <em style="color:var(--accent-secondary);font-style:normal;font-size:0.9em;">→ Partially addressed in <a href="welfare-compass-v2.html">v2</a>: BM25 + Dense + BGE reranker hybrid pipeline.</em></li>
+        <li>✓ <strong>Production-ready architecture</strong> — migrating from Streamlit to a Django + React stack, expanding coverage from Seoul youth to all citizens, and integrating real-time eligibility verification with welfare service APIs. <a href="welfare-compass-v2.html" style="font-size:0.9em;">→ See v2</a></li>
+      </ul>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="index.html" class="btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to All Projects
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <span class="footer-credit">© 2026 Yuna Sim</span>
+</footer>
+
+<!-- SCROLL REVEAL — same as main -->
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

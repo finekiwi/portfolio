@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drama Color Analysis | Yuna Sim</title>
+<meta name="description" content="Analyzing how Korean drama color grading affects viewer preferences — a cross-cultural comparison of Money Heist original and remake. Published in Journal of the Korean Data Analysis Society, Feb 2025.">
+<meta property="og:title" content="Drama Color Pattern Analysis — Case Study | Yuna Sim">
+<meta property="og:description" content="How Korean drama color grading affects viewer preferences. Cross-cultural comparison of Money Heist original and remake. First author publication.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://finekiwi.github.io/drama-color.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent: #2D6A6A;
+    --accent-hover: #1F5252;
+    --accent-light: #F0F7F7;
+    --accent-secondary: #4A8E8E;
+
+    --bg-primary: #FDFAF5;
+    --bg-secondary: #F0F0ED;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-light: #A3A3A3;
+    --border: #E8E5E1;
+    --border-light: #EFEFEF;
+
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    --max-width: 1080px;
+    --content-width: 840px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent-hover);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a:hover { color: var(--accent-hover); }
+  img { max-width: 100%; display: block; }
+
+  /* Typography — same 3-tier system */
+  .t-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .t-heading-1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .t-heading-2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+  }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     NAV — reused from welfare-compass
+     ========================================================================== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(253, 250, 245, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .nav-back:hover { color: var(--accent); }
+  .nav-back svg { width: 18px; height: 18px; }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  /* ==========================================================================
+     MAIN LAYOUT
+     ========================================================================== */
+  main {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 3.5rem 0;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-label span {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+
+  .content p {
+    font-size: 1rem;
+    color: #3D3D3D;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+  }
+  .content p:last-child { margin-bottom: 0; }
+
+  /* ==========================================================================
+     HERO
+     ========================================================================== */
+  .hero {
+    padding-top: 7rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-top: 1rem;
+    max-width: 640px;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-meta-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .hero-meta-label {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .hero-meta-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .hero-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  /* ==========================================================================
+     STAT GRID
+     ========================================================================== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .stat-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .stat-source {
+    font-size: 0.6rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+  }
+
+  /* ==========================================================================
+     PROCESS STEPS
+     ========================================================================== */
+  .process-steps {
+    margin: 2rem 0;
+  }
+
+  .process-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .process-step:last-child { margin-bottom: 0; }
+
+  .step-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .step-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ==========================================================================
+     HIGHLIGHT BOX
+     ========================================================================== */
+  .highlight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .highlight-box p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ==========================================================================
+     FINDINGS
+     ========================================================================== */
+  .finding-list {
+    margin: 2rem 0;
+  }
+
+  .finding-item {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-light);
+  }
+  .finding-item:last-child { border-bottom: 1px solid var(--border-light); }
+
+  .finding-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .finding-content h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+  }
+
+  .finding-content p {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ==========================================================================
+     BLOCKQUOTE
+     ========================================================================== */
+  .blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .blockquote p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  /* ==========================================================================
+     IMAGE CONTAINER
+     ========================================================================== */
+  .image-container {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .image-container img {
+    width: 100%;
+    display: block;
+  }
+
+  .image-caption {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ==========================================================================
+     TECH STACK
+     ========================================================================== */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .tech-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+  }
+
+  /* ==========================================================================
+     TAKEAWAY LIST
+     ========================================================================== */
+  .takeaway-list {
+    list-style: none;
+    margin: 1.5rem 0;
+  }
+
+  .takeaway-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+  .takeaway-list li:last-child { margin-bottom: 0; }
+
+  .takeaway-list li::before {
+    content: "\2192";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  /* ==========================================================================
+     BUTTONS
+     ========================================================================== */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 106, 106, 0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: calc(0.55rem - 1.5px) 1.2rem;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* ==========================================================================
+     BACK SECTION
+     ========================================================================== */
+  .back-section {
+    padding: 3rem 0 5rem;
+    text-align: center;
+  }
+
+  /* ==========================================================================
+     FOOTER
+     ========================================================================== */
+  footer {
+    padding: 3rem 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    display: block;
+  }
+
+  /* ==========================================================================
+     ANIMATIONS
+     ========================================================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE
+     ========================================================================== */
+  @media (max-width: 768px) {
+    .hero-meta {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    section {
+      padding: 2.5rem 0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    main { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .nav-inner { padding: 0.8rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Portfolio
+    </a>
+    <a href="index.html" class="nav-logo">Yuna Sim</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="t-display reveal">Drama Color Pattern Analysis</h1>
+    <p class="hero-subtitle reveal">Analyzing how Korean drama color grading affects viewer preferences through a cross-cultural comparison of Money Heist and its Korean remake.</p>
+
+    <div class="hero-meta reveal" style="margin-top: 2.5rem;">
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Timeline</span>
+        <span class="hero-meta-value">2024 &ndash; 2025</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Role</span>
+        <span class="hero-meta-value">First Author<br>Research Design &amp; Data Analysis</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Advisor</span>
+        <span class="hero-meta-value">Hoyoung Yoon<br>Ewha Womans University</span>
+      </div>
+    </div>
+
+    <div class="hero-actions reveal">
+      <span class="hero-result">Published &mdash; Journal of the Korean Data Analysis Society, Feb 2025</span>
+    </div>
+    <div class="hero-actions reveal" style="margin-top: 1rem;">
+      <a href="https://doi.org/10.37727/jkdas.2025.27.1.315" target="_blank" rel="noopener" class="btn-primary">View Abstract &rarr;</a>
+      <a href="assets/drama-color-paper.pdf" target="_blank" rel="noopener" class="btn-secondary">Download PDF &rarr;</a>
+    </div>
+  </section>
+
+  <!-- RESEARCH QUESTION -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Research Question</span>
+    </div>
+    <div class="content">
+      <p>Color grading is a defining visual element of Korean dramas, yet previous research had two blind spots: studies either compared color differences between dramas without connecting them to viewer preferences, or measured preferences using artificially manipulated colors detached from real content.</p>
+      <p>This study bridges both approaches. By cross-applying the actual color properties from the Spanish original <em>Money Heist</em> (La Casa de Papel) and its Korean remake <em>Money Heist: Joint Economic Area</em>, we tested whether viewers prefer Korean color grading &mdash; and whether that preference stems from the colors themselves or from personal attributes like nationality.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-number">1.5&times;</div>
+        <div class="stat-label">Korean color grading preferred over Spanish original</div>
+        <div class="stat-source">T-test, p = 0.046</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">86</div>
+        <div class="stat-label">Valid survey responses across three nationality groups</div>
+        <div class="stat-source">Korean 40 &middot; Chinese 32 &middot; Other 15</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">20</div>
+        <div class="stat-label">Image pairs analyzed &mdash; character and background scenes</div>
+        <div class="stat-source">10 pairs &times; 2 color versions</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Methodology</span>
+    </div>
+    <div class="content">
+      <p>The core challenge was creating a fair comparison: how do you isolate the effect of color grading from everything else in a scene? We designed a six-stage pipeline that extracts, measures, and cross-applies color properties between the two versions of the same drama.</p>
+    </div>
+
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Keyframe Extraction</h4>
+          <p>Extracted keyframes from the Spanish original (Season 1, 11 episodes) and Korean remake (Part 1, 6 episodes). Removed duplicate compositions via image vector comparison to retain only unique scenes.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Image Clustering</h4>
+          <p>Used ConvNeXtLarge (ImageNet-pretrained) to cluster frames by visual similarity across 5 aligned storylines, producing 10 clusters each. This groups scenes by visual features rather than captions or metadata.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Image Selection</h4>
+          <p>Selected 1 character scene and 1 background scene per storyline &mdash; 20 images total. Excluded violent or shooting scenes for ethical compliance. Character and background images were separated because prior research shows color functions differently for each.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>Color Measurement</h4>
+          <p>Extracted dominant colors from each image using CIELAB and HSV color spaces, capturing both perceptual color differences and saturation/brightness characteristics.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>Color Cross-application</h4>
+          <p>Applied CIELAB L*a*b values from each drama's color profile onto the other version's images. This means the same scene appears with both Korean and Spanish color grading &mdash; isolating color as the only variable.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <h4>Survey &amp; Analysis</h4>
+          <p>Surveyed 86 participants (Korean, Chinese, and other nationalities) on pairwise color preferences, controlling for OTT subscriptions, prior viewing of both versions, and nationality.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-container">
+      <img src="images/drama-methodology.svg" alt="Six-stage methodology pipeline: Keyframe Extraction, Image Clustering, Image Selection, Color Measurement, Color Cross-application, and Survey & Analysis">
+      <div class="image-caption">Research pipeline: from keyframe extraction to cross-cultural preference survey.</div>
+    </div>
+
+    <div class="image-container">
+      <img src="images/drama-color.png" alt="Color comparison between Korean remake and Spanish original versions of Money Heist, showing the same scenes with different color grading applied">
+      <div class="image-caption">Survey image examples: Korean remake color (left) vs. Spanish original color (right), cross-applied to the same source images.</div>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>Design rationale:</strong> Unlike previous studies that artificially shifted RGB values, we cross-applied actual color measurements from each drama using CIELAB coordinates. This preserves the authentic color palette that viewers experience, and ConvNeXtLarge clustering ensures visually comparable image pairs.</p>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <span class="t-heading-2">Methods &amp; Tools</span>
+      <div class="tech-stack">
+        <span class="tech-tag">ConvNeXtLarge</span>
+        <span class="tech-tag">CIELAB</span>
+        <span class="tech-tag">HSV Analysis</span>
+        <span class="tech-tag">K-means Clustering</span>
+        <span class="tech-tag">Logistic Regression</span>
+        <span class="tech-tag">Random Forest</span>
+        <span class="tech-tag">User Survey (n=86)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY FINDINGS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Key Findings</span>
+    </div>
+
+    <div class="finding-list">
+      <div class="finding-item">
+        <div class="finding-number">01</div>
+        <div class="finding-content">
+          <h4>Korean color grading preferred 1.5&times;</h4>
+          <p>Across the full sample, images with Korean drama colors were preferred at 52.5% versus 39.7% for Spanish original colors (p&lt;.05). This held regardless of whether the source image came from the Korean or Spanish version &mdash; color grading, not content familiarity, drove preference.</p>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-number">02</div>
+        <div class="finding-content">
+          <h4>Color properties, not personal taste</h4>
+          <p>Logit analysis showed that personal attributes &mdash; nationality, number of OTT subscriptions, whether participants had watched either version &mdash; did not consistently predict color preference. The preference was driven by the color properties of the images themselves.</p>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-number">03</div>
+        <div class="finding-content">
+          <h4>Saturation-based harmony is the key differentiator</h4>
+          <p>Korean drama colors are characterized not by high contrast between light and dark, but by saturation-based harmony &mdash; colors with similar chroma levels placed together. This finding is consistent with prior Korean-Japanese drama comparisons, suggesting a generalizable pattern in K-content color design.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="https://doi.org/10.37727/jkdas.2025.27.1.315" target="_blank" rel="noopener" class="btn-primary">View Abstract &rarr;</a>
+      <a href="assets/drama-color-paper.pdf" target="_blank" rel="noopener" class="btn-secondary">Download PDF &rarr;</a>
+    </div>
+  </section>
+
+  <!-- WHY THIS MATTERS FOR HCI -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Business Impact</span>
+    </div>
+
+    <div class="blockquote">
+      <p>Color preferences are not subjective noise &mdash; they are measurable responses to specific visual properties. Quantifying these patterns enables data-driven visual content optimization at scale.</p>
+    </div>
+
+    <div class="content">
+      <p>This study quantified something that content platforms and media companies have long relied on intuition for: how color composition affects viewer engagement. The finding that saturation harmony &mdash; not contrast or brightness &mdash; drives preference has direct applications in automated color grading pipelines, content recommendation systems, and A/B testing visual assets.</p>
+      <p>The methodology itself &mdash; combining deep learning-based scene clustering with color space analysis and statistical validation &mdash; demonstrates a reusable pipeline for any domain that needs to extract and evaluate visual features from large media datasets. This is the kind of computational analysis that turns subjective creative decisions into data-driven optimization.</p>
+    </div>
+  </section>
+
+  <!-- REFLECTION & WHAT'S NEXT -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Reflection &amp; What's Next</span>
+    </div>
+    <ul class="takeaway-list">
+      <li><strong>Quantitative methods can complement subjective judgment.</strong> Color choices in media production are often made by intuition. This study shows that measurable color properties (saturation, chroma harmony) predict viewer preference &mdash; offering a data-driven lens for creative decisions.</li>
+      <li><strong>Cross-cultural consistency strengthens the finding.</strong> The same saturation-based pattern appeared in Korean-Japanese comparisons by other researchers. Extending this to Korean-Spanish comparison reinforces that this is a generalizable characteristic of K-content color design, not a regional artifact.</li>
+      <li><strong>Pilot scope has clear limits.</strong> With 20 image pairs from a single drama and 86 respondents skewing toward university students, expanding to more titles, diverse demographics, and character-vs-background analysis would strengthen the conclusions.</li>
+      <li><strong>Emotion is the missing layer.</strong> This study measured preference but not emotional response. Future work should integrate color psychology frameworks to understand <em>why</em> saturation harmony feels more engaging &mdash; bridging the gap between visual measurement and user experience.</li>
+    </ul>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="index.html" class="btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to All Projects
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <span class="footer-credit">&copy; 2026 Yuna Sim</span>
+</footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

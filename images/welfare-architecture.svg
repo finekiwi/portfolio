@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="Inter, -apple-system, sans-serif">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+  </style>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="#B5B0AA"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="#2D6A6A"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="none"/>
+
+  <!-- USER -->
+  <g transform="translate(60, 220)">
+    <circle cx="0" cy="-18" r="12" fill="none" stroke="#1A1A1A" stroke-width="2"/>
+    <path d="M-18,18 Q-18,0 0,0 Q18,0 18,18" fill="none" stroke="#1A1A1A" stroke-width="2"/>
+    <text x="0" y="42" text-anchor="middle" fill="#1A1A1A" font-size="12" font-weight="500">User</text>
+  </g>
+
+  <!-- Arrow: User → Streamlit -->
+  <line x1="90" y1="220" x2="150" y2="220" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- STREAMLIT -->
+  <rect x="162" y="150" width="120" height="140" rx="10" fill="#FFFFFF" stroke="#2D6A6A" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="222" y="200" text-anchor="middle" fill="#2D6A6A" font-size="13" font-weight="600">Streamlit</text>
+  <text x="222" y="218" text-anchor="middle" fill="#8A8A8A" font-size="10">Frontend</text>
+
+  <!-- Arrow: Streamlit → LangChain container -->
+  <line x1="282" y1="220" x2="348" y2="220" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="315" y="212" text-anchor="middle" fill="#8A8A8A" font-size="10">Query</text>
+
+  <!-- LANGCHAIN CONTAINER — center x=570 -->
+  <rect x="360" y="30" width="420" height="350" rx="12" fill="#F0F7F7" stroke="#2D6A6A" stroke-width="1.5" stroke-dasharray="6,3" filter="url(#shadow)"/>
+  <text x="570" y="60" text-anchor="middle" fill="#2D6A6A" font-size="14" font-weight="600">LangChain</text>
+  <text x="570" y="76" text-anchor="middle" fill="#4A8E8E" font-size="10" font-weight="400">Orchestration</text>
+
+  <!-- DATA SOURCES — centered: left col x=410–530, right col x=610–730, margins=50px each -->
+
+  <!-- FAQ DB (above FAISS, center x=470) -->
+  <rect x="410" y="95" width="120" height="36" rx="4" fill="#F8F8F6" stroke="#C5C0BA" stroke-width="1.3" filter="url(#shadow)"/>
+  <text x="470" y="118" text-anchor="middle" fill="#4A4A4A" font-size="11" font-weight="500">FAQ DB</text>
+
+  <!-- Welfare DB (above BM25, center x=670) -->
+  <rect x="610" y="95" width="120" height="36" rx="4" fill="#F8F8F6" stroke="#C5C0BA" stroke-width="1.3" filter="url(#shadow)"/>
+  <text x="670" y="118" text-anchor="middle" fill="#4A4A4A" font-size="11" font-weight="500">Welfare DB</text>
+
+  <!-- Arrow: FAQ DB → FAISS (vertical down) -->
+  <line x1="470" y1="131" x2="470" y2="163" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrow: Welfare DB → BM25 (vertical down) -->
+  <line x1="670" y1="131" x2="670" y2="163" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- FAISS (center x=470) -->
+  <rect x="410" y="173" width="120" height="46" rx="6" fill="#FFFFFF" stroke="#2D6A6A" stroke-width="1.2"/>
+  <text x="470" y="195" text-anchor="middle" fill="#2D6A6A" font-size="12" font-weight="600">FAISS</text>
+  <text x="470" y="210" text-anchor="middle" fill="#8A8A8A" font-size="10">Vector Search</text>
+
+  <!-- BM25 (center x=670) -->
+  <rect x="610" y="173" width="120" height="46" rx="6" fill="#FFFFFF" stroke="#2D6A6A" stroke-width="1.2"/>
+  <text x="670" y="195" text-anchor="middle" fill="#2D6A6A" font-size="12" font-weight="600">BM25</text>
+  <text x="670" y="210" text-anchor="middle" fill="#8A8A8A" font-size="10">Keyword Search</text>
+
+  <!-- Arrow: FAISS → Ensemble (vertical down) -->
+  <line x1="470" y1="219" x2="470" y2="255" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrow: BM25 → Ensemble (vertical down) -->
+  <line x1="670" y1="219" x2="670" y2="255" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ENSEMBLE RETRIEVAL (x=410–730, center x=570) -->
+  <rect x="410" y="265" width="320" height="50" rx="6" fill="#FFFFFF" stroke="#2D6A6A" stroke-width="1.5"/>
+  <text x="570" y="286" text-anchor="middle" fill="#1A1A1A" font-size="12" font-weight="600">Ensemble Retrieval</text>
+  <text x="570" y="304" text-anchor="middle" fill="#8A8A8A" font-size="10">FAISS (semantic) + BM25 (keyword)</text>
+
+  <!-- Arrow: Ensemble → GPT API (vertical down) -->
+  <line x1="570" y1="315" x2="570" y2="415" stroke="#B5B0AA" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- GPT API (center x=570) -->
+  <rect x="500" y="425" width="140" height="50" rx="8" fill="#2D6A6A" stroke="none" filter="url(#shadow)"/>
+  <text x="570" y="448" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="600">GPT API</text>
+  <text x="570" y="465" text-anchor="middle" fill="#C5E0E0" font-size="10">Response Generation</text>
+
+  <!-- Answer path back to Streamlit -->
+  <path d="M500,450 L222,450 L222,290" stroke="#2D6A6A" stroke-width="1.5" fill="none" marker-end="url(#arrow-teal)"/>
+  <text x="361" y="468" text-anchor="middle" fill="#2D6A6A" font-size="10" font-weight="500">Answer</text>
+
+</svg>
