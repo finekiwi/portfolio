@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welfare Compass | Yuna Sim</title>
+<title>Welfare Compass — Hackathon Prototype | Yuna Sim</title>
 <meta name="description" content="Welfare Compass: RAG-based conversational AI for Seoul welfare policy navigation. Seoul AI Hackathon Top 20 / 181 teams.">
-<meta property="og:title" content="Welfare Compass — Case Study | Yuna Sim">
+<meta property="og:title" content="Welfare Compass — Hackathon Prototype | Yuna Sim">
 <meta property="og:description" content="RAG-based conversational AI for Seoul welfare policy navigation. Seoul AI Hackathon Top 20 / 181 teams.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://finekiwi.github.io/welfare-compass.html">
@@ -923,11 +923,11 @@
 <!-- NAV — reused from main, with back link -->
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="nav-back">
+    <a href="../index.html" class="nav-back">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       Back to Portfolio
     </a>
-    <a href="index.html" class="nav-logo">Yuna Sim</a>
+    <a href="../index.html" class="nav-logo">Yuna Sim</a>
   </div>
 </nav>
 
@@ -935,7 +935,7 @@
 
   <!-- HERO -->
   <section class="hero">
-    <h1 class="t-display reveal">Welfare Compass</h1>
+    <h1 class="t-display reveal">Welfare Compass — Hackathon Prototype</h1>
     <p class="hero-subtitle reveal">A conversational AI agent that helps Seoul citizens discover welfare benefits they're eligible for through natural dialogue.</p>
 
     <div class="hero-meta reveal">
@@ -1000,11 +1000,11 @@
 
     <div class="comparison-gallery">
       <div class="comparison-item">
-        <img src="images/seoultalk.png" alt="Seoul Talk chatbot showing category links instead of personalized answers" loading="lazy">
+        <img src="../images/seoultalk.png" alt="Seoul Talk chatbot showing category links instead of personalized answers" loading="lazy">
         <div class="comparison-label">Seoul Talk — KakaoTalk chatbot, category selection → link click, no automatic condition matching</div>
       </div>
       <div class="comparison-item">
-        <img src="images/bokjiro.png" alt="Bokjiro website requiring manual checkbox filtering across dozens of criteria" loading="lazy">
+        <img src="../images/bokjiro.png" alt="Bokjiro website requiring manual checkbox filtering across dozens of criteria" loading="lazy">
         <div class="comparison-label">Bokjiro — government welfare portal, checkbox filtering, users must judge their own eligibility</div>
       </div>
     </div>
@@ -1027,7 +1027,7 @@
     <div class="discovery-method">Informal interviews · n ≈ 8 · Bootcamp cohort, late-20s, Seoul residents</div>
 
     <div class="persona-card">
-      <img class="persona-avatar" src="images/YujinKim.png" alt="Persona: Yujin Kim">
+      <img class="persona-avatar" src="../images/YujinKim.png" alt="Persona: Yujin Kim">
       <div class="persona-info">
         <h4>Yujin, 27</h4>
         <div class="persona-meta">Unemployed · Single · Renting in Seoul · Lives alone</div>
@@ -1105,21 +1105,21 @@
 
     <div class="screenshot-gallery">
       <div class="screenshot-item">
-        <img src="images/chat1.png" alt="Chatbot conversation start: user describes their situation in natural language while their profile is displayed on the left sidebar" loading="lazy">
+        <img src="../images/chat1.png" alt="Chatbot conversation start: user describes their situation in natural language while their profile is displayed on the left sidebar" loading="lazy">
         <div class="screenshot-label">01 — Natural language input with auto-extracted user profile</div>
       </div>
       <div class="screenshot-item">
-        <img src="images/chat2.png" alt="Chatbot recommends three personalized welfare programs with summary cards" loading="lazy">
+        <img src="../images/chat2.png" alt="Chatbot recommends three personalized welfare programs with summary cards" loading="lazy">
         <div class="screenshot-label">02 — Personalized recommendations with welfare program cards</div>
       </div>
       <div class="screenshot-item">
-        <img src="images/chat3.png" alt="User asks about eligibility and application steps, chatbot provides detailed guidance" loading="lazy">
+        <img src="../images/chat3.png" alt="User asks about eligibility and application steps, chatbot provides detailed guidance" loading="lazy">
         <div class="screenshot-label">03 — Follow-up Q&A: eligibility check & application guide</div>
       </div>
     </div>
 
     <div class="video-container" id="demo-video">
-      <div class="video-poster" style="background-image: url('images/Youtube_thumbnail.png')" onclick="this.parentElement.innerHTML='<iframe src=\'https://www.youtube.com/embed/TMOHp0wMUXM?autoplay=1\' title=\'Welfare Compass Demo\' allowfullscreen style=\'width:100%;height:100%;border:none;display:block\'></iframe>'">
+      <div class="video-poster" style="background-image: url('../images/Youtube_thumbnail.png')" onclick="this.parentElement.innerHTML='<iframe src=\'https://www.youtube.com/embed/TMOHp0wMUXM?autoplay=1\' title=\'Welfare Compass Demo\' allowfullscreen style=\'width:100%;height:100%;border:none;display:block\'></iframe>'">
         <div class="play-btn"></div>
       </div>
     </div>
@@ -1135,12 +1135,12 @@
     </div>
 
     <div class="image-container">
-      <img src="images/welfare-architecture.svg" alt="Welfare Compass System Architecture showing Streamlit frontend, LangChain orchestration, FAISS vector DB, and BM25 ensemble retrieval">
+      <img src="../images/welfare-architecture.svg" alt="Welfare Compass System Architecture showing Streamlit frontend, LangChain orchestration, FAISS vector DB, and BM25 ensemble retrieval">
       <div class="image-caption">System Architecture: User query flows through Streamlit to the retrieval pipeline, which orchestrates intent detection, ensemble retrieval (FAISS + BM25), and GPT response generation.</div>
     </div>
 
     <div class="image-container">
-      <img src="images/welfare-flow-en.svg" alt="User flow diagram showing intent detection, information extraction, and welfare matching process">
+      <img src="../images/welfare-flow-en.svg" alt="User flow diagram showing intent detection, information extraction, and welfare matching process">
       <div class="image-caption">Conversation Flow: The system detects user intent, extracts profile information through dialogue, and matches against welfare eligibility criteria.</div>
     </div>
 
@@ -1213,7 +1213,7 @@
     </div>
 
     <div class="image-container">
-      <img src="images/hackathon-dev.jpg" alt="Development session at 2025 SeSAC AI Hackathon" class="hackathon-photo">
+      <img src="../images/hackathon-dev.jpg" alt="Development session at 2025 SeSAC AI Hackathon" class="hackathon-photo">
       <div class="image-caption">2025 SeSAC Hackathon Finals — Development session, Day 1</div>
     </div>
 
@@ -1259,7 +1259,7 @@
 
   <!-- BACK -->
   <div class="back-section">
-    <a href="index.html" class="btn-secondary">
+    <a href="../index.html" class="btn-secondary">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       Back to All Projects
     </a>

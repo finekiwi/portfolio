@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welfare Compass — Production Service | Yuna Sim</title>
+<meta name="description" content="Welfare Compass v2: Production rebuild of the Seoul AI Hackathon prototype. Django + Next.js full-stack, LangGraph ReAct Agent, hybrid search pipeline.">
+<meta property="og:title" content="Welfare Compass — Production Service | Yuna Sim">
+<meta property="og:description" content="Production rebuild of the Seoul AI Hackathon prototype. Django + Next.js, LangGraph ReAct Agent, BM25 + Dense + BGE hybrid search.">
+<meta property="og:type" content="article">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --accent: #2D6A6A;
+    --accent-hover: #1F5252;
+    --accent-light: #F0F7F7;
+    --accent-secondary: #4A8E8E;
+
+    --bg-primary: #FDFAF5;
+    --bg-secondary: #F0F0ED;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-light: #A3A3A3;
+    --border: #E8E5E1;
+    --border-light: #EFEFEF;
+
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    --max-width: 1080px;
+    --content-width: 840px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent-hover);
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a:hover { color: var(--accent-hover); }
+  img { max-width: 100%; display: block; }
+
+  .t-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .t-heading-1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .t-heading-2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+  }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(253, 250, 245, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .nav-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .nav-back:hover { color: var(--text-primary); }
+  .nav-back svg { width: 16px; height: 16px; }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-primary);
+  }
+
+  /* LAYOUT */
+  main {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-label span {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  section {
+    padding: 3.5rem 0;
+  }
+
+  section + section {
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* HERO */
+  .hero {
+    padding-top: 7rem;
+    padding-bottom: 3rem;
+    border-top: none;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    margin-bottom: 2.5rem;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-meta-item {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .hero-meta-label {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .hero-meta-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .hero-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  .hero-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* CONTENT */
+  .content p {
+    font-size: 1rem;
+    color: #3D3D3D;
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+  .content p:last-child { margin-bottom: 0; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    margin: 2rem 0;
+  }
+
+  .highlight-box p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* COMPARISON TABLE */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .comparison-table thead tr {
+    border-bottom: 2px solid var(--border);
+  }
+
+  .comparison-table th {
+    padding: 0.65rem 1rem;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    background: var(--bg-secondary);
+  }
+
+  .comparison-table th:nth-child(3) {
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .comparison-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    color: #3D3D3D;
+    line-height: 1.55;
+    vertical-align: top;
+  }
+
+  .comparison-table tr:last-child td { border-bottom: none; }
+
+  .comparison-table .row-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .comparison-table .v2-cell {
+    background: var(--accent-light);
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* INSIGHT CARDS — Finding → Decision */
+  .insight-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .insight-card {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .insight-finding {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-white);
+  }
+
+  .insight-finding .insight-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .insight-finding h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  .insight-finding p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .insight-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .insight-decision {
+    padding: 1.25rem;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .insight-decision .insight-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .insight-decision h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  .insight-decision p {
+    font-size: 0.88rem;
+    color: #3D3D3D;
+    line-height: 1.6;
+  }
+
+  .insight-impact {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .insight-card {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .insight-arrow {
+      padding: 0.25rem 0;
+      transform: rotate(90deg);
+    }
+  }
+
+  /* MINOR DECISIONS (4-5) */
+  .decision-minor-group {
+    margin: 1.5rem 0 0;
+  }
+
+  .decision-minor {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 0.5rem 0.9rem;
+    padding: 0.9rem 1rem;
+    border-left: 2px solid var(--border);
+    margin-bottom: 0.75rem;
+    align-items: start;
+  }
+
+  .decision-minor:last-child { margin-bottom: 0; }
+
+  .decision-minor-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-light);
+    line-height: 1.2;
+    padding-top: 0.1rem;
+  }
+
+  .decision-minor-content h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .decision-minor-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ARCHITECTURE DIAGRAM */
+  .image-container {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .image-container img {
+    width: 100%;
+    display: block;
+  }
+
+  .image-caption {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  .arch-diagram {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-white);
+    padding: 1.5rem;
+  }
+
+  .arch-diagram svg {
+    width: 100%;
+    display: block;
+  }
+
+  /* TECH STACK */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0;
+  }
+
+  .tech-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem 1.25rem;
+    margin-top: 1.25rem;
+    align-items: baseline;
+  }
+
+  .tech-grid-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    padding-top: 0.2rem;
+  }
+
+  /* PROGRESS */
+  .progress-group {
+    margin-bottom: 1.75rem;
+  }
+  .progress-group:last-child { margin-bottom: 0; }
+
+  .progress-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.8rem;
+  }
+
+  .progress-badge.done { background: var(--accent-light); color: var(--accent); }
+  .progress-badge.wip  { background: #FDF5E4; color: #8B6914; }
+  .progress-badge.planned { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  .progress-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .progress-list li {
+    position: relative;
+    padding-left: 1.4rem;
+    margin-bottom: 0.55rem;
+    font-size: 0.9rem;
+    color: #3D3D3D;
+    line-height: 1.65;
+  }
+  .progress-list li:last-child { margin-bottom: 0; }
+
+  .progress-group.is-done .progress-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .progress-group.is-wip .progress-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #8B6914;
+    font-weight: 500;
+  }
+  .progress-group.is-planned .progress-list li::before {
+    content: "○";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    top: 0.1rem;
+  }
+
+  /* CHALLENGES & SOLUTIONS */
+  .challenge-group {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+  .challenge-group:last-child { margin-bottom: 0; }
+
+  .challenge-block {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+  }
+
+  .challenge-block .challenge-label,
+  .solution-block .challenge-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .challenge-block .challenge-label { color: var(--text-light); }
+  .solution-block .challenge-label  { color: var(--accent); }
+
+  .challenge-block h4,
+  .solution-block h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+  }
+
+  .challenge-block p,
+  .solution-block p {
+    font-size: 0.88rem;
+    color: #3D3D3D;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .challenge-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .solution-block {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem;
+    border-radius: 0 6px 6px 0;
+  }
+
+  @media (max-width: 768px) {
+    .challenge-group {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .challenge-arrow {
+      padding: 0.25rem 0;
+      transform: rotate(90deg);
+    }
+  }
+
+  /* BLOCKQUOTE */
+  .blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .blockquote p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+
+  .blockquote .attribution {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: normal;
+  }
+
+  /* TAKEAWAY LIST */
+  .takeaway-list {
+    list-style: none;
+    margin: 1.5rem 0;
+  }
+
+  .takeaway-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #3D3D3D;
+    line-height: 1.7;
+  }
+  .takeaway-list li:last-child { margin-bottom: 0; }
+
+  .takeaway-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  /* BACK + BUTTONS */
+  .back-section {
+    padding: 3rem 0 5rem;
+    text-align: center;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: calc(0.55rem - 1.5px) 1.2rem;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 106, 106, 0.3);
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 3rem 2rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-light);
+    display: block;
+  }
+
+  /* ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .hero-meta {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    section { padding: 2.5rem 0; }
+    .tech-grid {
+      grid-template-columns: 1fr;
+    }
+    .tech-grid-label {
+      margin-top: 0.5rem;
+      margin-bottom: -0.2rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    main { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .nav-inner { padding: 0.8rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Portfolio
+    </a>
+    <a href="index.html" class="nav-logo">Yuna Sim</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="t-display reveal">Welfare Compass — Production Service</h1>
+    <p class="hero-subtitle reveal">Production rebuild of our hackathon prototype. Full-stack service with persistent user profiles, rule-based eligibility matching, and a LangGraph ReAct agent for conversational policy guidance.</p>
+
+    <div class="hero-meta reveal">
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Timeline</span>
+        <span class="hero-meta-value">Jan–Mar 2026<br>(ongoing)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">Team</span>
+        <span class="hero-meta-value">3 members<br>Backend · Frontend · LLM/AI</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="t-heading-2 hero-meta-label">My Role</span>
+        <span class="hero-meta-value">LLM/Agent Pipeline Engineer<br>Prompt Engineering · Code Review Lead</span>
+      </div>
+    </div>
+
+    <div class="hero-actions reveal">
+      <span class="hero-status">In Progress</span>
+      <a href="https://welfare-compass-v2.vercel.app" target="_blank" rel="noopener" class="btn-primary">Live Demo →</a>
+      <a href="welfare-compass.html" class="btn-secondary">View v1 (Hackathon) →</a>
+    </div>
+  </section>
+
+  <!-- CONTEXT: WHY V2? -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Context: Why v2?</span>
+    </div>
+    <div class="content">
+      <p>The hackathon result was encouraging, but two observations made it clear that v1 had a fundamental design problem.</p>
+      <p>First, the judges: <em>"Why make users re-enter the same information every time?"</em> Every session started from scratch — age, income, employment status, all collected again through conversation. For a service meant to lower barriers to welfare access, requiring repetitive input was a friction we'd designed in.</p>
+      <p>Second, a discovery about the existing infrastructure: the government's Bokjiro welfare portal — the official reference system — relied on matching by civil servants manually reviewing applications. Even the authoritative solution didn't scale. This told us there was a real gap to fill, not just a hackathon showcase to polish.</p>
+    </div>
+
+    <div class="highlight-box">
+      <p>v2 direction: persistent user profiles with auto-matching, a LangGraph ReAct agent for dynamic query handling, and a full Django + Next.js production stack — expanding from Seoul youth to all citizens.</p>
+    </div>
+  </section>
+
+  <!-- V2 ARCHITECTURE -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>v2 Architecture</span>
+    </div>
+    <div class="content">
+      <p>The core shift from v1 to v2 is replacing a fixed sequential pipeline with a dynamic ReAct agent, and separating the matching and search concerns that were conflated in v1.</p>
+    </div>
+
+    <!-- v1 vs v2 comparison table -->
+    <div class="table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>v1 — Hackathon</th>
+            <th>v2 — Production</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-label">Architecture</td>
+            <td>Streamlit · fixed sequential pipeline</td>
+            <td class="v2-cell">Django + Next.js · LangGraph ReAct agent</td>
+          </tr>
+          <tr>
+            <td class="row-label">Agent design</td>
+            <td>5 nodes, always executes all in order</td>
+            <td class="v2-cell">Central orchestrator · 4 tools selected dynamically per turn</td>
+          </tr>
+          <tr>
+            <td class="row-label">Matching</td>
+            <td>Search → filter (search limits candidates)</td>
+            <td class="v2-cell">Rule-based full DB scan · 342 policies · ~50ms</td>
+          </tr>
+          <tr>
+            <td class="row-label">Search role</td>
+            <td>Used for eligibility matching</td>
+            <td class="v2-cell">Separated — comparison / FAQ / exploration only</td>
+          </tr>
+          <tr>
+            <td class="row-label">LLM calls / request</td>
+            <td>5</td>
+            <td class="v2-cell">~3 (40% reduction for simple queries)</td>
+          </tr>
+          <tr>
+            <td class="row-label">User profiles</td>
+            <td>None — re-collected every session</td>
+            <td class="v2-cell">Persistent profiles · auto-matched at session start</td>
+          </tr>
+          <tr>
+            <td class="row-label">Data</td>
+            <td>~100 manually curated policies</td>
+            <td class="v2-cell">342 policies via Youth Policy API · daily sync</td>
+          </tr>
+          <tr>
+            <td class="row-label">Eligibility logic</td>
+            <td>LLM-assisted (probabilistic)</td>
+            <td class="v2-cell">Deterministic rule-based · no LLM in matching path</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Key Technical Decisions -->
+    <div style="margin: 2.5rem 0 0;">
+      <span class="t-heading-2">Key Technical Decisions</span>
+    </div>
+
+    <div class="insight-grid">
+      <!-- Decision 1 -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>Fixed pipelines waste LLM calls on simple queries</h4>
+          <p>A "hello" message in v1 still triggered the full extraction → search → response sequence — 5 LLM calls for a conversational greeting. The pipeline couldn't distinguish intent before committing resources.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Decision 1 — ReAct Agent over fixed pipeline</div>
+          <h4>LangGraph orchestrator selects tools per turn</h4>
+          <p>The orchestrator reads the conversation and decides which tools to invoke — skipping extraction when there's nothing to extract, skipping search when the query is a follow-up clarification.</p>
+          <span class="insight-impact">→ 40% fewer LLM calls on casual/simple queries</span>
+        </div>
+      </div>
+
+      <!-- Decision 2 -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>Vector search with k=20 could miss qualifying policies</h4>
+          <p>With 342 policies in the DB, a policy that qualifies but ranks semantically low (due to phrasing mismatch) would not appear in the top-20 results — silently excluded from eligibility matching.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Decision 2 — Separate matching from search</div>
+          <h4>Rule-based full DB scan for eligibility · search for exploration</h4>
+          <p>Eligibility matching runs a deterministic rule check across all 342 policies (~50ms, no LLM). Search is reserved separately for comparison queries, FAQ, and policy exploration — where ranking tradeoffs are acceptable.</p>
+          <span class="insight-impact">→ Zero false negatives from search truncation in matching</span>
+        </div>
+      </div>
+
+      <!-- Decision 3 -->
+      <div class="insight-card">
+        <div class="insight-finding">
+          <div class="insight-label">Finding</div>
+          <h4>LLM module tightly coupled to Django ORM</h4>
+          <p>The eligibility checker needed to query the database, but importing Django ORM directly into the LLM module created framework coupling — making the tool untestable without a live database.</p>
+        </div>
+        <div class="insight-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="insight-decision">
+          <div class="insight-label">Decision 3 — Factory pattern for dependency injection</div>
+          <h4>create_check_eligibility(fetcher) — inject the data source</h4>
+          <p>The eligibility tool accepts a <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;background:rgba(45,106,106,0.08);padding:0.1em 0.3em;border-radius:3px;">fetcher</code> function at construction time. Production passes the ORM query; tests pass a stub — same tool, different data source.</p>
+          <span class="insight-impact">→ Full integration test suite without live DB dependency</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decisions 4-5 (minor) -->
+    <div class="decision-minor-group">
+      <div class="decision-minor">
+        <div class="decision-minor-num">4</div>
+        <div class="decision-minor-content">
+          <h4>Embedded query rewriting inside search_policies</h4>
+          <p>A standalone rewrite tool relied on the orchestrator calling it before search — which it occasionally skipped. Embedding <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">rewrite_query</code> inside <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">search_policies</code> makes query optimization run unconditionally whenever search is invoked, eliminating the coordination dependency.</p>
+        </div>
+      </div>
+      <div class="decision-minor">
+        <div class="decision-minor-num">5</div>
+        <div class="decision-minor-content">
+          <h4>Claude + Codex parallel development workflow</h4>
+          <p>With one engineer handling LLM/agent design, solo development creates a bottleneck between architecture and implementation. Claude handles design, review, and architectural judgment; Codex handles implementation, testing, and PR generation from structured task specs. This parallelizes work that would otherwise be sequential — though it introduced a cross-validation gap that shaped later process improvements (see Challenges).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram">
+      <svg viewBox="0 0 760 375" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;font-family:'Inter',sans-serif;">
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="6.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="#C0BAB2"/>
+          </marker>
+        </defs>
+
+        <!-- Row 1: User → Next.js → Django -->
+        <rect x="10" y="22" width="80" height="46" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="50" y="41" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1A1A1A">User</text>
+        <text x="50" y="57" text-anchor="middle" font-size="9" fill="#6B6B6B">Browser</text>
+
+        <line x1="90" y1="45" x2="118" y2="45" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <rect x="120" y="22" width="148" height="46" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="194" y="41" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1A1A1A">Next.js</text>
+        <text x="194" y="57" text-anchor="middle" font-size="9" fill="#6B6B6B">Frontend</text>
+
+        <line x1="268" y1="45" x2="298" y2="45" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <rect x="300" y="22" width="160" height="46" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="380" y="41" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1A1A1A">Django REST API</text>
+        <text x="380" y="57" text-anchor="middle" font-size="9" fill="#6B6B6B">DRF · PostgreSQL</text>
+
+        <!-- Arrow Django → Orchestrator -->
+        <line x1="380" y1="68" x2="380" y2="106" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Row 2: Orchestrator (full width, teal) -->
+        <rect x="10" y="108" width="740" height="62" rx="4" fill="#F0F7F7" stroke="#2D6A6A" stroke-width="1.5"/>
+        <text x="380" y="133" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1A1A">LangGraph ReAct Orchestrator</text>
+        <text x="380" y="153" text-anchor="middle" font-size="9.5" fill="#2D6A6A">GPT-4o-mini · dynamically selects tools per conversation turn</text>
+
+        <!-- Arrows Orchestrator → Tools -->
+        <line x1="122" y1="170" x2="122" y2="198" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="367" y1="170" x2="367" y2="198" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="625" y1="170" x2="625" y2="198" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Row 3: Tools -->
+        <!-- extract_info -->
+        <rect x="10" y="200" width="225" height="72" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="122" y="223" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="500" fill="#1A1A1A">extract_info</text>
+        <text x="122" y="241" text-anchor="middle" font-size="9" fill="#6B6B6B">Extracts user profile</text>
+        <text x="122" y="258" text-anchor="middle" font-size="9" fill="#6B6B6B">from conversation context</text>
+
+        <!-- search_policies -->
+        <rect x="250" y="200" width="235" height="72" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="367" y="223" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="500" fill="#1A1A1A">search_policies</text>
+        <text x="367" y="241" text-anchor="middle" font-size="9" fill="#6B6B6B">Hybrid semantic + keyword search</text>
+        <!-- rewrite_query embedded badge -->
+        <rect x="278" y="250" width="178" height="17" rx="3" fill="#F0F0ED"/>
+        <text x="367" y="262" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#6B6B6B">+ rewrite_query (embedded)</text>
+
+        <!-- check_eligibility -->
+        <rect x="500" y="200" width="250" height="72" rx="4" fill="white" stroke="#E8E5E1" stroke-width="1.5"/>
+        <text x="625" y="223" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="500" fill="#1A1A1A">check_eligibility</text>
+        <text x="625" y="241" text-anchor="middle" font-size="9" fill="#6B6B6B">Rule-based full DB scan</text>
+        <text x="625" y="258" text-anchor="middle" font-size="9" fill="#6B6B6B">No LLM · 342 policies · ~50ms</text>
+
+        <!-- Arrows Tools → Data stores -->
+        <line x1="367" y1="272" x2="367" y2="303" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="625" y1="272" x2="625" y2="303" stroke="#C0BAB2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Row 4: Data Stores -->
+        <!-- MCP Server -->
+        <rect x="250" y="305" width="235" height="58" rx="4" fill="#F0F7F7" stroke="#4A8E8E" stroke-width="1"/>
+        <text x="367" y="326" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1A1A1A">MCP Server</text>
+        <text x="367" y="342" text-anchor="middle" font-size="9" fill="#2D6A6A">BM25 (Kiwi) + Dense (Chroma)</text>
+        <text x="367" y="357" text-anchor="middle" font-size="9" fill="#2D6A6A">+ BGE Reranker · RRF fusion</text>
+
+        <!-- PostgreSQL -->
+        <rect x="500" y="305" width="250" height="58" rx="4" fill="#F0F7F7" stroke="#4A8E8E" stroke-width="1"/>
+        <text x="625" y="326" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1A1A1A">PostgreSQL</text>
+        <text x="625" y="342" text-anchor="middle" font-size="9" fill="#2D6A6A">342 policies · daily sync</text>
+        <text x="625" y="357" text-anchor="middle" font-size="9" fill="#2D6A6A">Youth Policy API</text>
+      </svg>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-light);margin-top:-1rem;margin-bottom:2rem;line-height:1.5;">
+      v2 system architecture — matching and search are fully separated. check_eligibility scans all 342 policies deterministically; search_policies uses hybrid retrieval only for exploration and FAQ.
+    </div>
+
+    <!-- Tech Stack -->
+    <div>
+      <span class="t-heading-2">Tech Stack</span>
+      <div class="tech-grid">
+        <span class="tech-grid-label">Backend</span>
+        <div class="tech-stack">
+          <span class="tech-tag">Django 5</span>
+          <span class="tech-tag">DRF</span>
+          <span class="tech-tag">PostgreSQL</span>
+          <span class="tech-tag">Next.js</span>
+        </div>
+        <span class="tech-grid-label">AI / Agent</span>
+        <div class="tech-stack">
+          <span class="tech-tag">LangGraph ReAct</span>
+          <span class="tech-tag">GPT-4o-mini</span>
+          <span class="tech-tag">OpenAI Embeddings</span>
+        </div>
+        <span class="tech-grid-label">Search</span>
+        <div class="tech-stack">
+          <span class="tech-tag">BM25 (Kiwi tokenizer)</span>
+          <span class="tech-tag">Chroma</span>
+          <span class="tech-tag">BGE Reranker</span>
+          <span class="tech-tag">RRF</span>
+        </div>
+        <span class="tech-grid-label">Infra / Dev</span>
+        <div class="tech-stack">
+          <span class="tech-tag">MCP</span>
+          <span class="tech-tag">LangFuse (planned)</span>
+          <span class="tech-tag">Claude</span>
+          <span class="tech-tag">Codex</span>
+          <span class="tech-tag">Jira</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Progress</span>
+    </div>
+
+    <div class="progress-group is-done">
+      <div class="progress-badge done">Completed</div>
+      <ul class="progress-list">
+        <li>LangGraph ReAct agent with orchestrator prompt v2.2</li>
+        <li>4-tool architecture: <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">extract_info</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">search_policies</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">check_eligibility</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">rewrite_query</code> (embedded)</li>
+        <li>Hybrid search pipeline: BM25 + Dense + BGE reranker via MCP server</li>
+        <li>Rule-based eligibility matching with factory pattern — full DB scan, 342 policies</li>
+        <li>Integration test suite: real LLM + stub tools for contract validation</li>
+        <li>Backend API, DB migrations, Smart Seoul Map V5 integration</li>
+        <li>Frontend base structure (Next.js)</li>
+      </ul>
+    </div>
+
+    <div class="progress-group is-wip">
+      <div class="progress-badge wip">In Progress</div>
+      <ul class="progress-list">
+        <li>LangFuse observability (scoped as separate PR)</li>
+        <li>Streaming responses</li>
+        <li>Full user auth flow integration</li>
+        <li>Map display in chatbot (frontend rendering)</li>
+        <li>Evaluation dataset + scoring loop</li>
+      </ul>
+    </div>
+
+    <div class="progress-group is-planned">
+      <div class="progress-badge planned">Planned</div>
+      <ul class="progress-list">
+        <li><strong>Stage 0 welfare</strong> — crisis intent handling for users facing system entry barriers (no fixed address, no ID, emergency shelter needs). Designed but not yet implemented — would use a curated knowledge base separate from the policy DB.</li>
+        <li>Admin dashboard + usage analytics</li>
+        <li>Deployment</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- V2 CHALLENGES -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>v2 Challenges</span>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Document-to-code cross-validation gap</h4>
+        <p>During orchestrator redesign (BRAIN4-42), Claude reviewed document consistency and Codex executed implementation tasks — but neither caught field name mismatches between design docs and actual tool output schemas. A teammate's PR review surfaced the issue.</p>
+      </div>
+      <div class="challenge-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>Explicit cross-validation step in task specs</h4>
+        <p>Added a mandatory validation stage to all Codex task specs: before implementation, verify field names against the live tool output schemas. The retrospective also clarified which review tasks require human judgment versus LLM review.</p>
+      </div>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Inconsistent field naming across team</h4>
+        <p><code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">interests</code> vs <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">needs</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">region</code> vs <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">district</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">income</code> vs <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">income_level</code> — different team members used different names for the same concepts, causing silent mismatches between the agent's extracted profile and the eligibility rule schema.</p>
+      </div>
+      <div class="challenge-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>Canonical field names in orchestrator prompt v2.2</h4>
+        <p>Established a single canonical field name dictionary in the orchestrator system prompt — the authoritative reference for all tool inputs and outputs. Code review now checks against this dictionary, and the task spec template includes a field-name verification step.</p>
+      </div>
+    </div>
+
+    <div class="challenge-group">
+      <div class="challenge-block">
+        <div class="challenge-label">Challenge</div>
+        <h4>Test coverage vs. infrastructure constraints</h4>
+        <p>Full integration tests — real LLM calls against real tools — are slow, expensive, and sensitive to API latency. Running them on every commit was impractical, but skipping them risked missing contract-level regressions between the orchestrator and its tools.</p>
+      </div>
+      <div class="challenge-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+      <div class="solution-block">
+        <div class="challenge-label">Solution</div>
+        <h4>Two-track testing strategy</h4>
+        <p><strong>Track 1</strong> (<code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">integration_orchestrator</code>): real LLM + stub tools — validates orchestrator logic and tool-calling contracts without infrastructure cost. Run on every PR. <strong>Track 2</strong> (<code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">integration_live</code>): real LLM + real tools — kept minimal, run on targeted scenarios before major releases.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESIGN GOALS -->
+  <section class="reveal">
+    <div class="section-label">
+      <span>Design Goals</span>
+    </div>
+    <div class="content">
+      <p>Welfare Compass v1 demonstrated the concept was viable — placing Top 20 of 181 teams, with judges noting it as something citizens could use right away. v2 builds on that validated foundation with specific design goals that address what the hackathon prototype couldn't.</p>
+    </div>
+
+    <ul class="takeaway-list">
+      <li><strong>Zero re-entry.</strong> Persistent user profiles mean users never repeat themselves across sessions. The agent starts each conversation from what it already knows, supplementing through dialogue only when information is missing or outdated.</li>
+      <li><strong>No missed policies.</strong> Rule-based full-DB matching ensures that every policy a user qualifies for surfaces — regardless of how they phrase their query. Eligibility is a deterministic check, not a ranking problem.</li>
+      <li><strong>Separation of concerns for reliability.</strong> Matching and search serve different purposes and have different correctness requirements. Keeping them separate makes each independently testable and prevents search ranking tradeoffs from affecting eligibility outcomes.</li>
+      <li><strong>Designed for scale.</strong> The factory pattern, two-track testing, and MCP-based search server are architectural choices that anticipate expansion — more policies, more citizen categories, more query types — without requiring a redesign.</li>
+    </ul>
+  </section>
+
+  <!-- BACK -->
+  <div class="back-section">
+    <a href="index.html" class="btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to All Projects
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <span class="footer-credit">© 2026 Yuna Sim</span>
+</footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
