@@ -636,6 +636,22 @@
     line-height: 1.65;
   }
 
+  .project-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.3rem 0.75rem;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .project-status.wip {
+    background: #FFF8E7;
+    color: #B8860B;
+    border: 1px solid #E8D5A0;
+  }
+
   .case-study-link {
     display: inline-flex;
     align-items: center;
@@ -986,7 +1002,55 @@
     <span class="t-heading-2">Projects</span>
   </div>
 
-  <!-- Welfare Compass -->
+  <!-- Welfare Compass v2 — Production Service -->
+  <div class="project-card reveal">
+    <img class="project-thumbnail" src="images/welfare-compass-v2-main.png" alt="Welfare Compass v2 service main page showing category navigation and prioritized welfare policies" loading="lazy">
+    <div class="project-body">
+      <div class="project-header">
+        <div>
+          <h3>Welfare Compass v2 — Production Service</h3>
+          <p class="project-context">Team of 3 · Full-Stack Rebuild · Jan–Mar 2026</p>
+        </div>
+        <div class="project-metric">
+          <span class="project-status wip">In Progress</span>
+        </div>
+      </div>
+      <div class="project-content">
+        <h4>Problem</h4>
+        <p>The hackathon prototype had no persistent state and a simplistic retrieval pipeline — couldn't scale for real users with diverse eligibility conditions.</p>
+
+        <h4>Approach</h4>
+        <ul>
+          <li>Django + Next.js full-stack architecture with persistent user profiles and eligibility engine</li>
+          <li>LangGraph ReAct Agent replacing sequential RAG with autonomous reasoning + tool use</li>
+          <li>Hybrid search pipeline: BM25 + Dense (BGE-m3) + Cross-encoder reranking</li>
+        </ul>
+
+        <h4>Outcome</h4>
+        <p>Architecture designed and core modules under active development. Production deployment planned for March 2026.</p>
+
+        <h4>Tech Stack</h4>
+        <div class="tech-stack">
+          <span class="tech-tag">Django</span>
+          <span class="tech-tag">Next.js</span>
+          <span class="tech-tag">LangGraph</span>
+          <span class="tech-tag">PostgreSQL</span>
+          <span class="tech-tag">BM25 + Dense</span>
+          <span class="tech-tag">BGE-m3</span>
+        </div>
+
+        <div class="hci-relevance">
+          <p><strong>Business Impact:</strong> Evolving a hackathon prototype into a production-grade service — persistent conversation flow, eligibility-aware recommendations, and scalable architecture for real-world deployment.</p>
+        </div>
+
+        <div class="project-actions">
+          <a href="projects/welfare-compass-v2.html" class="case-study-link">View Full Case Study →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welfare Compass v1 — Hackathon Prototype -->
   <div class="project-card reveal">
     <div class="project-video-poster" style="background-image: url('images/Youtube_thumbnail.png')" onclick="this.outerHTML='<iframe class=\'project-thumbnail-video\' src=\'https://www.youtube.com/embed/TMOHp0wMUXM?autoplay=1\' title=\'Welfare Compass Demo\' allowfullscreen></iframe>'">
       <div class="play-btn"></div>
@@ -994,7 +1058,7 @@
     <div class="project-body">
       <div class="project-header">
         <div>
-          <h3>Welfare Compass</h3>
+          <h3>Welfare Compass v1 — Hackathon Prototype</h3>
           <p class="project-context">Seoul AI Hackathon · Top 20 / 181 teams · 2025</p>
         </div>
         <div class="project-metric">
