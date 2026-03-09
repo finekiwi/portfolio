@@ -1101,6 +1101,53 @@
     </div>
   </div>
 
+  <!-- CatchUp v2 — VLM/LLM Document Structuring Pipeline -->
+  <div class="project-card reveal">
+    <img class="project-thumbnail" src="images/catchup-ui-demo.png" alt="CatchUp application showing structured note output from VLM/LLM pipeline" loading="lazy" style="object-position: top;">
+    <div class="project-body">
+      <div class="project-header">
+        <div>
+          <h3>CatchUp v2 — Study Material Structuring Pipeline</h3>
+          <p class="project-context">Solo Project · VLM/LLM Pipeline · Mar 2026</p>
+        </div>
+        <div class="project-metric">
+          <span class="project-status wip">In Progress</span>
+        </div>
+      </div>
+      <div class="project-content">
+        <h4>Problem</h4>
+        <p>Dropping a document into GPT gives a summary — but when you have a PDF, a notebook, and screenshots covering related concepts, nothing connects the knowledge across them.</p>
+
+        <h4>Approach</h4>
+        <ul>
+          <li>Multi-format parsing pipeline: PDF (DoclingLoader), Jupyter notebooks (nbformat), images (VLM 5-class classification)</li>
+          <li>12 VLM models benchmarked across 8 axes — including reasoning vs. non-reasoning and generational gap analysis</li>
+          <li>LLM-powered note generation with versioned prompts (v1.0→v1.4) and concept extraction with cross-document backlinking</li>
+        </ul>
+
+        <h4>Outcome</h4>
+        <p>Core parsing + VLM client operational with 10-model unified API, cost tracking, and structured JSON output. Experiment and RAG pipeline under active development.</p>
+
+        <h4>Tech Stack</h4>
+        <div class="tech-stack">
+          <span class="tech-tag">VLM (12 models)</span>
+          <span class="tech-tag">LangChain</span>
+          <span class="tech-tag">ChromaDB</span>
+          <span class="tech-tag">Qwen2-VL</span>
+          <span class="tech-tag">Streamlit</span>
+        </div>
+
+        <div class="hci-relevance">
+          <p><strong>Business Impact:</strong> Transforms scattered study materials into a searchable, concept-linked knowledge base — demonstrating multi-modal document AI pipeline design with systematic model evaluation across 12 VLMs.</p>
+        </div>
+
+        <div class="project-actions">
+          <a href="projects/catchup.html" class="case-study-link">View Full Case Study →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Drama Color Analysis -->
   <div class="project-card reveal">
     <img class="project-thumbnail" src="images/drama-color.png" alt="Color comparison between Korean remake and Spanish original versions of Money Heist" loading="lazy">
