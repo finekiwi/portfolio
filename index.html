@@ -368,7 +368,7 @@
   }
 
   /* ==========================================================================
-     ABOUT — 2-column layout
+     ABOUT — 2-column with full-width stats
      ========================================================================== */
   .about {
     padding-top: 7rem;
@@ -377,8 +377,8 @@
 
   .about-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 45fr 55fr;
+    gap: 3rem;
     margin-top: 2rem;
   }
 
@@ -418,7 +418,35 @@
     color: var(--accent);
   }
 
+  .tech-skills {
+    margin-bottom: 0;
+  }
+
+  .skill-group {
+    margin-bottom: 0.75rem;
+  }
+  .skill-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .skill-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+
   .stat-grid {
+    display: grid;
+    grid-template-columns: 45fr 55fr;
+    gap: 3rem;
+    margin-top: 2.5rem;
+  }
+
+  .stat-pair {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
@@ -441,6 +469,76 @@
     font-size: 0.78rem;
     color: var(--text-secondary);
     font-weight: 500;
+  }
+
+  /* ==========================================================================
+     PROJECT OVERVIEW — Compact at-a-glance grid
+     ========================================================================== */
+  .project-overview {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .overview-card {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-white);
+    transition: all 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .overview-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    color: inherit;
+  }
+
+  .overview-card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    line-height: 1.3;
+  }
+
+  .overview-card-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .overview-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .overview-card-tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .overview-card-metric {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
   }
 
   /* ==========================================================================
@@ -615,9 +713,10 @@
   .tech-tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.68rem;
-    color: var(--text-light);
+    color: var(--text-secondary);
+    font-weight: 500;
     padding: 0.2rem 0.6rem;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border);
     border-radius: 2px;
   }
 
@@ -872,9 +971,16 @@
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
+    .stat-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
     .contact-grid {
       grid-template-columns: 1fr;
       gap: 2.5rem;
+    }
+    .overview-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
     .nav-toggle { display: block; }
 
@@ -899,6 +1005,8 @@
     section { padding-left: 1.25rem; padding-right: 1.25rem; }
     .nav-inner { padding: 0.8rem 1.25rem; }
     .stat-grid { grid-template-columns: 1fr; }
+    .stat-pair { grid-template-columns: 1fr 1fr; }
+    .overview-grid { grid-template-columns: 1fr; }
     .project-body { padding: 1.5rem; }
     .project-header { flex-direction: column; gap: 0.5rem; }
     .project-metric { text-align: left; }
@@ -960,7 +1068,7 @@
   <div class="about-content reveal">
     <div class="about-text">
       <p>I'm an AI engineer who builds end-to-end intelligent systems — from RAG-based chatbots for public service navigation, to computational analysis pipelines for visual data, to computer vision systems for industrial quality inspection.</p>
-      <p>I hold an M.S. in AI Convergence and a dual B.S./B.A. in Electronics Engineering and Multimedia from Ewha Womans University. My focus is on turning research into deployable solutions — designing LLM pipelines, training and optimizing CV models, and integrating AI into real-world workflows.</p>
+      <p>I hold an M.S. in AI Convergence and a dual B.S./B.A. in Electronics Engineering and Multimedia. My focus is on turning research into deployable solutions — designing LLM pipelines, training and optimizing CV models, and integrating AI into real-world workflows.</p>
     </div>
     <div>
       <div class="research-interests">
@@ -972,23 +1080,63 @@
           <span class="interest-tag">OCR / Document AI</span>
         </div>
       </div>
-      <div class="stat-grid">
-        <div class="stat-item">
-          <div class="stat-number">4</div>
-          <div class="stat-label">Publications</div>
+      <div class="tech-skills">
+        <p class="t-heading-2 interest-label">Tech Stack</p>
+        <div class="skill-group">
+          <span class="skill-category">LLM / RAG</span>
+          <div class="interest-tags">
+            <span class="interest-tag">LangChain</span>
+            <span class="interest-tag">LangGraph</span>
+            <span class="interest-tag">ChromaDB</span>
+          </div>
         </div>
-        <div class="stat-item">
-          <div class="stat-number">2</div>
-          <div class="stat-label">Patents Filed</div>
+        <div class="skill-group">
+          <span class="skill-category">ML / DL</span>
+          <div class="interest-tags">
+            <span class="interest-tag">Python</span>
+            <span class="interest-tag">PyTorch</span>
+            <span class="interest-tag">TensorFlow</span>
+            <span class="interest-tag">pandas</span>
+          </div>
         </div>
-        <div class="stat-item">
-          <div class="stat-number">Top 20</div>
-          <div class="stat-label">/ 181 teams</div>
+        <div class="skill-group">
+          <span class="skill-category">Infra / Tools</span>
+          <div class="interest-tags">
+            <span class="interest-tag">SQL</span>
+            <span class="interest-tag">Streamlit</span>
+            <span class="interest-tag">Git</span>
+            <span class="interest-tag">Docker</span>
+          </div>
         </div>
-        <div class="stat-item">
-          <div class="stat-number">87.5%</div>
-          <div class="stat-label">Defect Detection mAP</div>
+      </div>
+      <div class="tech-skills" style="margin-top: 1.5rem;">
+        <p class="t-heading-2 interest-label">Languages</p>
+        <div class="interest-tags">
+          <span class="interest-tag">Korean (Native)</span>
+          <span class="interest-tag">English (Advanced, OPIc AL)</span>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-grid reveal">
+    <div class="stat-pair">
+      <div class="stat-item">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Publications</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Patents Filed</div>
+      </div>
+    </div>
+    <div class="stat-pair">
+      <div class="stat-item">
+        <div class="stat-number">Top 20</div>
+        <div class="stat-label">/ 181 teams</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">87.5%</div>
+        <div class="stat-label">Defect Detection mAP</div>
       </div>
     </div>
   </div>
@@ -996,10 +1144,61 @@
 
 <div class="divider"></div>
 
-<!-- PROJECTS -->
-<section class="projects" id="projects">
+<!-- PROJECT OVERVIEW -->
+<section class="project-overview" id="projects">
   <div class="section-label">
     <span class="t-heading-2">Projects</span>
+  </div>
+  <div class="overview-grid">
+    <a href="projects/welfare-compass-v2.html" class="overview-card reveal">
+      <div class="overview-card-title">Welfare Compass v2</div>
+      <div class="overview-card-desc">Production-grade welfare policy recommender with LangGraph ReAct Agent</div>
+      <div class="overview-card-meta">
+        <span class="overview-card-tech">Django · LangGraph · BM25+Dense</span>
+        <span class="project-status wip" style="font-size: 0.6rem; padding: 0.15rem 0.5rem;">In Progress</span>
+      </div>
+    </a>
+    <a href="projects/welfare-compass.html" class="overview-card reveal">
+      <div class="overview-card-title">Welfare Compass v1</div>
+      <div class="overview-card-desc">RAG chatbot for 300+ welfare policies — Seoul AI Hackathon finalist</div>
+      <div class="overview-card-meta">
+        <span class="overview-card-tech">LangChain · FAISS · Streamlit</span>
+        <span class="overview-card-metric">Top 20 / 181</span>
+      </div>
+    </a>
+    <a href="projects/catchup.html" class="overview-card reveal">
+      <div class="overview-card-title">CatchUp</div>
+      <div class="overview-card-desc">Multi-format study material structuring with 12 VLM benchmarking</div>
+      <div class="overview-card-meta">
+        <span class="overview-card-tech">VLM · LangChain · ChromaDB</span>
+        <span class="project-status wip" style="font-size: 0.6rem; padding: 0.15rem 0.5rem;">In Progress</span>
+      </div>
+    </a>
+    <a href="projects/drama-color.html" class="overview-card reveal">
+      <div class="overview-card-title">Drama Color Analysis</div>
+      <div class="overview-card-desc">Cross-cultural color grading analysis with CNN + user study</div>
+      <div class="overview-card-meta">
+        <span class="overview-card-tech">ConvNeXt · HSV/LAB · Survey</span>
+        <span class="overview-card-metric">1.5× pref (p&lt;.05)</span>
+      </div>
+    </a>
+    <a href="projects/welding.html" class="overview-card reveal">
+      <div class="overview-card-title">Welding Defect Detection</div>
+      <div class="overview-card-desc">Synthetic-to-real domain adaptation for manufacturing QC</div>
+      <div class="overview-card-meta">
+        <span class="overview-card-tech">CycleGAN · YOLOv5</span>
+        <span class="overview-card-metric">87.5% mAP</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROJECT DETAILS -->
+<section class="projects" id="project-details">
+  <div class="section-label">
+    <span class="t-heading-2">Project Details</span>
   </div>
 
   <!-- Welfare Compass v2 — Production Service -->
